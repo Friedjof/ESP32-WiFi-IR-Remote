@@ -14,6 +14,14 @@ uint32_t reverse32(uint32_t value) {
          (uint32_t(reverse8((value >> 16) & 0xFF)) << 8) |
          reverse8((value >> 24) & 0xFF);
 }
+uint32_t reverseValue(uint32_t value, uint8_t bits) {
+  uint32_t result = 0;
+  for (uint8_t i = 0; i < bits; ++i) {
+    result = (result << 1) | (value & 1);
+    value >>= 1;
+  }
+  return result;
+}
 bool hexBytes(const String& input, uint32_t& value) {
   char b[9] = {};
   unsigned n[4] = {};
@@ -101,6 +109,18 @@ bool addSignal(JsonDocument& target, const String& label, const String& type,
       if (addr > 65535 || cmd > 65535) { error = "NECext address/command out of range"; return false; }
       value = reverse32((cmd << 16) | addr);
       bits = 32;
+    } else if (protocol == "Samsung32") {
+      if (addr > 255 || cmd > 255) { error = "Samsung32 address/command out of range"; return false; }
+      uint8_t a = reverse8(addr), c = reverse8(cmd);
+      value = (uint32_t(a) << 24) | (uint32_t(a) << 16) | (uint32_t(c) << 8) | (c ^ 0xFF);
+      bits = 32;
+    } else if (protocol == "SIRC" || protocol == "SIRC15") {
+      bits = protocol == "SIRC" ? 12 : 15;
+      if (addr > (protocol == "SIRC" ? 31U : 255U) || cmd > 127) {
+        error = "Sony SIRC address/command out of range"; return false;
+      }
+      value = reverseValue((addr << 7) | cmd, bits);
+      carrier = 40000;
     } else if (protocol == "RC5") {
       if (addr > 31 || cmd > 63) { error = "RC5 address/command out of range"; return false; }
       value = (addr << 6) | cmd;
@@ -114,7 +134,8 @@ bool addSignal(JsonDocument& target, const String& label, const String& type,
     }
     char hex[19];
     snprintf(hex, sizeof(hex), "0x%llX", static_cast<unsigned long long>(value));
-    spec["protocol"] = protocol == "NECext" ? "NEC" : protocol;
+    spec["protocol"] = protocol == "NECext" ? "NEC" : protocol == "Samsung32" ? "SAMSUNG" :
+                        (protocol == "SIRC" || protocol == "SIRC15") ? "SONY" : protocol;
     spec["source_protocol"] = protocol;
     spec["address"] = address;
     spec["command"] = command;

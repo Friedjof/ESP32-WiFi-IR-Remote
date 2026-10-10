@@ -74,12 +74,21 @@ bool ConfigStorage::begin() {
       LittleFS.rename(profilePath(id, ".bak"), profilePath(id));
     }
   }
-  if (!profileCount()) {
+  const bool firstInstall = !profileCount();
+  if (firstInstall) {
     if (!migrateLegacy()) Serial.println("No legacy configuration to migrate");
-    if (!installFactories()) return false;
   }
   Preferences prefs;
   prefs.begin("tvremote", false);
+  // Add newly bundled remotes once while preserving edited or deleted user profiles.
+  if (firstInstall || prefs.getUInt("factory_set", 0) < 2) {
+    if (!installFactories(firstInstall)) { prefs.end(); return false; }
+    if (LittleFS.exists(profilePath("samsung_ue32f4000")) &&
+        LittleFS.exists(profilePath("lg_c1")) &&
+        LittleFS.exists(profilePath("sony_rmt_tx100d"))) {
+      prefs.putUInt("factory_set", 2);
+    }
+  }
   String preferred = prefs.getString("profile", "toshiba_tv");
   prefs.end();
   String error;
@@ -127,10 +136,15 @@ bool ConfigStorage::migrateLegacy() {
   return true;
 }
 
-bool ConfigStorage::installFactories() {
+bool ConfigStorage::installFactories(bool includeTemplates) {
   for (const FactoryProfile& factory : factoryProfiles) {
     String id = factory.id;
+    if (!includeTemplates && (id == "toshiba_tv" || id == "media_player")) continue;
     if (LittleFS.exists(profilePath(id))) continue;
+    if (profileCount() >= MAX_PROFILES) {
+      Serial.printf("No profile slot for bundled remote %s\n", factory.id);
+      continue;
+    }
     JsonDocument profile;
     String error;
     if (deserializeJson(profile, factory.json) || !validate(profile, error) ||
@@ -195,13 +209,16 @@ bool ConfigStorage::validate(JsonDocument& doc, String& error) const {
     if (!validName(name) || !entry.value().is<JsonObject>()) { error = "Invalid command: " + name; return false; }
     JsonObject cmd = entry.value().as<JsonObject>();
     const char* proto = cmd["protocol"] | "";
-    if (strcmp(proto, "NEC") && strcmp(proto, "SONY") && strcmp(proto, "RC5") && strcmp(proto, "RC6") && strcmp(proto, "RAW")) {
+    if (strcmp(proto, "NEC") && strcmp(proto, "SAMSUNG") && strcmp(proto, "SONY") && strcmp(proto, "RC5") && strcmp(proto, "RC6") && strcmp(proto, "RAW")) {
       error = "Unsupported protocol: " + name; return false;
     }
     uint32_t commandFreq = cmd["frequency"] | freq;
     if (commandFreq < 30000 || commandFreq > 60000) { error = "Invalid frequency: " + name; return false; }
     if ((!strcmp(proto, "RC5") || !strcmp(proto, "RC6")) && commandFreq != 36000 && !cmd["code"].isNull()) {
       error = "RC5 and RC6 require 36000 Hz: " + name; return false;
+    }
+    if (!strcmp(proto, "SAMSUNG") && commandFreq != 38000 && !cmd["code"].isNull()) {
+      error = "Samsung32 requires 38000 Hz: " + name; return false;
     }
     if (!strcmp(proto, "RAW")) {
       if (!cmd["duty_cycle"].isNull()) {
@@ -224,6 +241,8 @@ bool ConfigStorage::validate(JsonDocument& doc, String& error) const {
       if (bits < 1 || bits > 64) { error = "Bits out of range: " + name; return false; }
       if (!strcmp(proto, "RC5") && bits != 12 && bits != 13) { error = "RC5 must use 12 or 13 bits: " + name; return false; }
       if (!strcmp(proto, "RC6") && bits != 20 && bits != 36) { error = "RC6 must use 20 or 36 bits: " + name; return false; }
+      if (!strcmp(proto, "SAMSUNG") && bits != 32) { error = "Samsung32 must use 32 bits: " + name; return false; }
+      if (!strcmp(proto, "SONY") && bits != 12 && bits != 15 && bits != 20) { error = "Sony SIRC must use 12, 15 or 20 bits: " + name; return false; }
       if (!cmd["code"].isNull()) {
         uint64_t value;
         if (!cmd["code"].is<const char*>() || !parseHex(cmd["code"].as<const char*>(), value)) { error = "Code must be a hex string: " + name; return false; }
@@ -415,6 +434,15 @@ void ConfigStorage::list(JsonDocument& output) const {
         JsonObject entry = entries.add<JsonObject>();
         entry["id"] = id;
         entry["device"] = profile["device"].as<String>();
+        entry["configured_commands"] = 0;
+        for (JsonPairConst command : profile["commands"].as<JsonObjectConst>()) {
+          JsonVariantConst spec = command.value();
+          const char* protocol = spec["protocol"] | "";
+          if ((!strcmp(protocol, "RAW") && spec["timings"].as<JsonArrayConst>().size()) ||
+              (strcmp(protocol, "RAW") && !spec["code"].isNull())) {
+            entry["configured_commands"] = entry["configured_commands"].as<size_t>() + 1;
+          }
+        }
         entry["pages"] = profile["pages"].as<JsonArrayConst>().size();
         entry["buttons"] = 0;
         for (JsonObjectConst page : profile["pages"].as<JsonArrayConst>()) {
@@ -451,11 +479,11 @@ bool ConfigStorage::makeJobFrom(JsonVariantConst cmd, uint32_t defaultFrequency,
                                 const String& name, IrJob& job, String& error) {
   if (!validName(name) || !cmd.is<JsonObjectConst>()) { error = "Unknown command"; return false; }
   const char* protocol = cmd["protocol"];
-  if (!protocol || (strcmp(protocol, "NEC") && strcmp(protocol, "SONY") &&
+  if (!protocol || (strcmp(protocol, "NEC") && strcmp(protocol, "SAMSUNG") && strcmp(protocol, "SONY") &&
       strcmp(protocol, "RC5") && strcmp(protocol, "RC6") && strcmp(protocol, "RAW"))) {
     error = "Unsupported protocol"; return false;
   }
-  job.protocol = !strcmp(protocol, "NEC") ? IrProtocol::Nec : !strcmp(protocol, "SONY") ? IrProtocol::Sony : !strcmp(protocol, "RC5") ? IrProtocol::Rc5 : !strcmp(protocol, "RC6") ? IrProtocol::Rc6 : IrProtocol::Raw;
+  job.protocol = !strcmp(protocol, "NEC") ? IrProtocol::Nec : !strcmp(protocol, "SAMSUNG") ? IrProtocol::Samsung : !strcmp(protocol, "SONY") ? IrProtocol::Sony : !strcmp(protocol, "RC5") ? IrProtocol::Rc5 : !strcmp(protocol, "RC6") ? IrProtocol::Rc6 : IrProtocol::Raw;
   job.frequency = cmd["frequency"] | defaultFrequency;
   if (job.frequency < 30000 || job.frequency > 60000) { error = "Invalid frequency"; return false; }
   name.toCharArray(job.name, sizeof(job.name));

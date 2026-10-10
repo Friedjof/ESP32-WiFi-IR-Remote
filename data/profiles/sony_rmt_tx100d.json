@@ -1,0 +1,624 @@
+{
+  "id": "sony_rmt_tx100d",
+  "device": "Sony RMT-TX100D TV",
+  "default_frequency": 40000,
+  "repeat_interval_ms": 250,
+  "receiver_enabled": false,
+  "origin": {
+    "format": "Flipper IR",
+    "source": "Lucaslhm/Flipper-IRDB",
+    "source_url": "https://github.com/Lucaslhm/Flipper-IRDB/blob/8aa36d9aa01ce2c5a5c889c294b9458b53599596/TVs/Sony/Sony_RMT_TX100D.ir",
+    "source_profile": "Sony_RMT_TX100D.ir",
+    "target_verified": false
+  },
+  "pages": [
+    {
+      "id": "remote",
+      "label": "Remote",
+      "groups": [
+        {
+          "label": "MAIN",
+          "columns": 2,
+          "buttons": [
+            {
+              "command": "power",
+              "label": "Power",
+              "icon": "power",
+              "tone": "power"
+            },
+            {
+              "command": "input",
+              "label": "Input",
+              "icon": "input"
+            }
+          ]
+        },
+        {
+          "label": "SYSTEM",
+          "columns": 4,
+          "buttons": [
+            {
+              "command": "home",
+              "label": "Home",
+              "icon": "home"
+            },
+            {
+              "command": "back",
+              "label": "Back",
+              "icon": "back"
+            },
+            {
+              "command": "menu",
+              "label": "Menu",
+              "icon": "menu"
+            },
+            {
+              "command": "exit",
+              "label": "Exit",
+              "icon": "exit"
+            }
+          ]
+        },
+        {
+          "label": "VOLUME · CHANNEL",
+          "columns": 4,
+          "buttons": [
+            {
+              "command": "volume_down",
+              "label": "Vol −",
+              "icon": "minus",
+              "repeat": true
+            },
+            {
+              "command": "volume_up",
+              "label": "Vol +",
+              "icon": "plus",
+              "repeat": true
+            },
+            {
+              "command": "channel_down",
+              "label": "CH −",
+              "icon": "minus",
+              "repeat": true
+            },
+            {
+              "command": "channel_up",
+              "label": "CH +",
+              "icon": "plus",
+              "repeat": true
+            }
+          ]
+        },
+        {
+          "label": "NAVIGATION",
+          "columns": 3,
+          "buttons": [
+            {
+              "command": "up",
+              "label": "Up",
+              "icon": "up",
+              "repeat": true,
+              "column": 2,
+              "row": 1
+            },
+            {
+              "command": "left",
+              "label": "Left",
+              "icon": "left",
+              "repeat": true,
+              "column": 1,
+              "row": 2
+            },
+            {
+              "command": "ok",
+              "label": "OK",
+              "tone": "accent",
+              "column": 2,
+              "row": 2
+            },
+            {
+              "command": "right",
+              "label": "Right",
+              "icon": "right",
+              "repeat": true,
+              "column": 3,
+              "row": 2
+            },
+            {
+              "command": "down",
+              "label": "Down",
+              "icon": "down",
+              "repeat": true,
+              "column": 2,
+              "row": 3
+            }
+          ]
+        },
+        {
+          "label": "MEDIA",
+          "columns": 4,
+          "buttons": [
+            {
+              "command": "mute",
+              "label": "Mute",
+              "icon": "mute"
+            },
+            {
+              "command": "play",
+              "label": "Play",
+              "icon": "play"
+            },
+            {
+              "command": "pause",
+              "label": "Pause",
+              "icon": "pause"
+            },
+            {
+              "command": "stop",
+              "label": "Stop",
+              "icon": "stop"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "more",
+      "label": "More",
+      "groups": [
+        {
+          "label": "NUMBERS",
+          "columns": 3,
+          "buttons": [
+            {
+              "command": "digit_1",
+              "label": "1"
+            },
+            {
+              "command": "digit_2",
+              "label": "2"
+            },
+            {
+              "command": "digit_3",
+              "label": "3"
+            },
+            {
+              "command": "digit_4",
+              "label": "4"
+            },
+            {
+              "command": "digit_5",
+              "label": "5"
+            },
+            {
+              "command": "digit_6",
+              "label": "6"
+            },
+            {
+              "command": "digit_7",
+              "label": "7"
+            },
+            {
+              "command": "digit_8",
+              "label": "8"
+            },
+            {
+              "command": "digit_9",
+              "label": "9"
+            },
+            {
+              "command": "digit_0",
+              "label": "0"
+            }
+          ]
+        },
+        {
+          "label": "EXTRAS",
+          "columns": 3,
+          "buttons": [
+            {
+              "command": "guide",
+              "label": "Guide"
+            },
+            {
+              "command": "subtitle",
+              "label": "Subtitles"
+            },
+            {
+              "command": "audio",
+              "label": "Audio"
+            }
+          ]
+        },
+        {
+          "label": "COLOURS",
+          "columns": 4,
+          "buttons": [
+            {
+              "command": "red",
+              "label": "Red",
+              "tone": "red"
+            },
+            {
+              "command": "green",
+              "label": "Green",
+              "tone": "green"
+            },
+            {
+              "command": "yellow",
+              "label": "Yellow",
+              "tone": "yellow"
+            },
+            {
+              "command": "blue",
+              "label": "Blue",
+              "tone": "blue"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "commands": {
+    "power": {
+      "protocol": "SONY",
+      "code": "0xA90",
+      "bits": 12,
+      "frequency": 40000,
+      "source_name": "Power",
+      "source_protocol": "SIRC",
+      "address": "01 00 00 00",
+      "command": "15 00 00 00"
+    },
+    "input": {
+      "protocol": "SONY",
+      "code": "0xA50",
+      "bits": 12,
+      "frequency": 40000,
+      "source_name": "Source",
+      "source_protocol": "SIRC",
+      "address": "01 00 00 00",
+      "command": "25 00 00 00"
+    },
+    "home": {
+      "protocol": "SONY",
+      "code": "0x070",
+      "bits": 12,
+      "frequency": 40000,
+      "source_name": "Home",
+      "source_protocol": "SIRC",
+      "address": "01 00 00 00",
+      "command": "60 00 00 00"
+    },
+    "back": {
+      "protocol": "SONY",
+      "code": "0x62E9",
+      "bits": 15,
+      "frequency": 40000,
+      "source_name": "Back",
+      "source_protocol": "SIRC15",
+      "address": "97 00 00 00",
+      "command": "23 00 00 00"
+    },
+    "menu": {
+      "protocol": "SONY",
+      "code": "0x0D58",
+      "bits": 15,
+      "frequency": 40000,
+      "source_name": "Sync_/_menu",
+      "source_protocol": "SIRC15",
+      "address": "1A 00 00 00",
+      "command": "58 00 00 00"
+    },
+    "exit": {
+      "protocol": "SONY",
+      "code": "0xC70",
+      "bits": 12,
+      "frequency": 40000,
+      "source_name": "Exit",
+      "source_protocol": "SIRC",
+      "address": "01 00 00 00",
+      "command": "63 00 00 00"
+    },
+    "volume_up": {
+      "protocol": "SONY",
+      "code": "0x490",
+      "bits": 12,
+      "frequency": 40000,
+      "source_name": "Vol_up",
+      "source_protocol": "SIRC",
+      "address": "01 00 00 00",
+      "command": "12 00 00 00"
+    },
+    "volume_down": {
+      "protocol": "SONY",
+      "code": "0xC90",
+      "bits": 12,
+      "frequency": 40000,
+      "source_name": "Vol_dn",
+      "source_protocol": "SIRC",
+      "address": "01 00 00 00",
+      "command": "13 00 00 00"
+    },
+    "channel_up": {
+      "protocol": "SONY",
+      "code": "0x090",
+      "bits": 12,
+      "frequency": 40000,
+      "source_name": "Ch_next",
+      "source_protocol": "SIRC",
+      "address": "01 00 00 00",
+      "command": "10 00 00 00"
+    },
+    "channel_down": {
+      "protocol": "SONY",
+      "code": "0x890",
+      "bits": 12,
+      "frequency": 40000,
+      "source_name": "Ch_prev",
+      "source_protocol": "SIRC",
+      "address": "01 00 00 00",
+      "command": "11 00 00 00"
+    },
+    "up": {
+      "protocol": "SONY",
+      "code": "0x2F0",
+      "bits": 12,
+      "frequency": 40000,
+      "source_name": "Up",
+      "source_protocol": "SIRC",
+      "address": "01 00 00 00",
+      "command": "74 00 00 00"
+    },
+    "down": {
+      "protocol": "SONY",
+      "code": "0xAF0",
+      "bits": 12,
+      "frequency": 40000,
+      "source_name": "Down",
+      "source_protocol": "SIRC",
+      "address": "01 00 00 00",
+      "command": "75 00 00 00"
+    },
+    "left": {
+      "protocol": "SONY",
+      "code": "0x2D0",
+      "bits": 12,
+      "frequency": 40000,
+      "source_name": "Left",
+      "source_protocol": "SIRC",
+      "address": "01 00 00 00",
+      "command": "34 00 00 00"
+    },
+    "right": {
+      "protocol": "SONY",
+      "code": "0xCD0",
+      "bits": 12,
+      "frequency": 40000,
+      "source_name": "Right",
+      "source_protocol": "SIRC",
+      "address": "01 00 00 00",
+      "command": "33 00 00 00"
+    },
+    "ok": {
+      "protocol": "SONY",
+      "code": "0xA70",
+      "bits": 12,
+      "frequency": 40000,
+      "source_name": "Ok",
+      "source_protocol": "SIRC",
+      "address": "01 00 00 00",
+      "command": "65 00 00 00"
+    },
+    "mute": {
+      "protocol": "SONY",
+      "code": "0x290",
+      "bits": 12,
+      "frequency": 40000,
+      "source_name": "Mute",
+      "source_protocol": "SIRC",
+      "address": "01 00 00 00",
+      "command": "14 00 00 00"
+    },
+    "play": {
+      "protocol": "SONY",
+      "code": "0x2CE9",
+      "bits": 15,
+      "frequency": 40000,
+      "source_name": "Play",
+      "source_protocol": "SIRC15",
+      "address": "97 00 00 00",
+      "command": "1A 00 00 00"
+    },
+    "pause": {
+      "protocol": "SONY",
+      "code": "0x4CE9",
+      "bits": 15,
+      "frequency": 40000,
+      "source_name": "Pause",
+      "source_protocol": "SIRC15",
+      "address": "97 00 00 00",
+      "command": "19 00 00 00"
+    },
+    "stop": {
+      "protocol": "SONY",
+      "code": "0x0CE9",
+      "bits": 15,
+      "frequency": 40000,
+      "source_name": "Stop",
+      "source_protocol": "SIRC15",
+      "address": "97 00 00 00",
+      "command": "18 00 00 00"
+    },
+    "guide": {
+      "protocol": "SONY",
+      "code": "0x6D25",
+      "bits": 15,
+      "frequency": 40000,
+      "source_name": "Guide",
+      "source_protocol": "SIRC15",
+      "address": "A4 00 00 00",
+      "command": "5B 00 00 00"
+    },
+    "subtitle": {
+      "protocol": "SONY",
+      "code": "0x0AE9",
+      "bits": 15,
+      "frequency": 40000,
+      "source_name": "Sub",
+      "source_protocol": "SIRC15",
+      "address": "97 00 00 00",
+      "command": "28 00 00 00"
+    },
+    "audio": {
+      "protocol": "SONY",
+      "code": "0xE90",
+      "bits": 12,
+      "frequency": 40000,
+      "source_name": "Audio",
+      "source_protocol": "SIRC",
+      "address": "01 00 00 00",
+      "command": "17 00 00 00"
+    },
+    "red": {
+      "protocol": "SONY",
+      "code": "0x52E9",
+      "bits": 15,
+      "frequency": 40000,
+      "source_name": "Red",
+      "source_protocol": "SIRC15",
+      "address": "97 00 00 00",
+      "command": "25 00 00 00"
+    },
+    "green": {
+      "protocol": "SONY",
+      "code": "0x32E9",
+      "bits": 15,
+      "frequency": 40000,
+      "source_name": "Green",
+      "source_protocol": "SIRC15",
+      "address": "97 00 00 00",
+      "command": "26 00 00 00"
+    },
+    "yellow": {
+      "protocol": "SONY",
+      "code": "0x72E9",
+      "bits": 15,
+      "frequency": 40000,
+      "source_name": "Yellow",
+      "source_protocol": "SIRC15",
+      "address": "97 00 00 00",
+      "command": "27 00 00 00"
+    },
+    "blue": {
+      "protocol": "SONY",
+      "code": "0x12E9",
+      "bits": 15,
+      "frequency": 40000,
+      "source_name": "Blue",
+      "source_protocol": "SIRC15",
+      "address": "97 00 00 00",
+      "command": "24 00 00 00"
+    },
+    "digit_0": {
+      "protocol": "SONY",
+      "code": "0x910",
+      "bits": 12,
+      "frequency": 40000,
+      "source_name": "0",
+      "source_protocol": "SIRC",
+      "address": "01 00 00 00",
+      "command": "09 00 00 00"
+    },
+    "digit_1": {
+      "protocol": "SONY",
+      "code": "0x010",
+      "bits": 12,
+      "frequency": 40000,
+      "source_name": "1",
+      "source_protocol": "SIRC",
+      "address": "01 00 00 00",
+      "command": "00 00 00 00"
+    },
+    "digit_2": {
+      "protocol": "SONY",
+      "code": "0x810",
+      "bits": 12,
+      "frequency": 40000,
+      "source_name": "2",
+      "source_protocol": "SIRC",
+      "address": "01 00 00 00",
+      "command": "01 00 00 00"
+    },
+    "digit_3": {
+      "protocol": "SONY",
+      "code": "0x410",
+      "bits": 12,
+      "frequency": 40000,
+      "source_name": "3",
+      "source_protocol": "SIRC",
+      "address": "01 00 00 00",
+      "command": "02 00 00 00"
+    },
+    "digit_4": {
+      "protocol": "SONY",
+      "code": "0xC10",
+      "bits": 12,
+      "frequency": 40000,
+      "source_name": "4",
+      "source_protocol": "SIRC",
+      "address": "01 00 00 00",
+      "command": "03 00 00 00"
+    },
+    "digit_5": {
+      "protocol": "SONY",
+      "code": "0x210",
+      "bits": 12,
+      "frequency": 40000,
+      "source_name": "5",
+      "source_protocol": "SIRC",
+      "address": "01 00 00 00",
+      "command": "04 00 00 00"
+    },
+    "digit_6": {
+      "protocol": "SONY",
+      "code": "0xA10",
+      "bits": 12,
+      "frequency": 40000,
+      "source_name": "6",
+      "source_protocol": "SIRC",
+      "address": "01 00 00 00",
+      "command": "05 00 00 00"
+    },
+    "digit_7": {
+      "protocol": "SONY",
+      "code": "0x610",
+      "bits": 12,
+      "frequency": 40000,
+      "source_name": "7",
+      "source_protocol": "SIRC",
+      "address": "01 00 00 00",
+      "command": "06 00 00 00"
+    },
+    "digit_8": {
+      "protocol": "SONY",
+      "code": "0xE10",
+      "bits": 12,
+      "frequency": 40000,
+      "source_name": "8",
+      "source_protocol": "SIRC",
+      "address": "01 00 00 00",
+      "command": "07 00 00 00"
+    },
+    "digit_9": {
+      "protocol": "SONY",
+      "code": "0x110",
+      "bits": 12,
+      "frequency": 40000,
+      "source_name": "9",
+      "source_protocol": "SIRC",
+      "address": "01 00 00 00",
+      "command": "08 00 00 00"
+    }
+  }
+}

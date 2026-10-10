@@ -2,7 +2,7 @@
 #include <Arduino.h>
 #include "Config.h"
 
-enum class IrProtocol : uint8_t { Nec, Sony, Rc5, Rc6, Raw };
+enum class IrProtocol : uint8_t { Nec, Samsung, Sony, Rc5, Rc6, Raw };
 
 struct IrJob {
   IrProtocol protocol = IrProtocol::Nec;

@@ -2,7 +2,7 @@
 
 A fully local, browser-based universal IR remote for the Seeed Studio XIAO ESP32C3 and classic ESP32 DevKit. The default build targets a XIAO ESP32C3 with the IR transistor on **D10/GPIO10**. It creates an always-on, open WiFi access point and presents a phone-friendly remote through the captive portal or `http://192.168.4.1/`. It can also join a 2.4 GHz home WiFi network while keeping that access point on, making `http://tv-remote.local/` available where mDNS works.
 
-The project ships with five **unverified Finder candidates** and two **uncoded templates**: a Toshiba 43UL2163DAY TV and a generic media player. Their button layouts are different. No candidate is claimed to work on the 43UL2163DAY until you test it. Use the Finder to test individual keys, or import a Flipper `.ir` file.
+The project ships with five **unverified Finder candidates**, two **uncoded templates** (Toshiba 43UL2163DAY and media player), and three ready-to-try TV profiles with sourced IR codes: **Samsung UE32F4000**, **LG C1**, and **Sony RMT-TX100D**. A source file documents the signals for its named remote; compatibility with another TV is not guaranteed. No Toshiba candidate is claimed to work on the 43UL2163DAY until you test it.
 
 <table>
   <tr>
@@ -24,12 +24,13 @@ These resistor values are a starting point; check the actual LED's forward volta
 ## Features
 
 - Multiple remote profiles, each in its own LittleFS JSON file with its own pages, groups, visible buttons, hold behavior and IR codes.
+- Three sourced Samsung, LG and Sony TV remotes available in the profile picker after flashing; existing user profiles stay intact.
 - IR Code Finder with five sourced Toshiba/Vestel hypotheses, one-key tests, saved Yes/No feedback and profile activation after two working keys.
-- Flipper `.ir` import for parsed NEC/NECext/RC5/RC6 and RAW signals, plus profile picker, layout cloning, JSON editing, export and deletion.
+- Flipper `.ir` import for parsed NEC/NECext, Samsung32, Sony SIRC/SIRC15, RC5/RC6 and RAW signals, plus profile picker, layout cloning, JSON editing, export and deletion.
 - Mobile-first dark interface, local SVG icons, and gzip-compressed assets embedded in firmware. No CDN, cloud, login page or separate app.
 - Open, always-on 2.4 GHz AP with captive DNS and direct redirect to the remote; optional home WiFi in AP+STA mode and mDNS.
 - REST API restricted to local AP or home-WiFi clients, optional HTTP Basic admin password for changes, a four-command IR queue and rate limiting.
-- NEC, Sony, RC5, RC6 and RAW send modes, with carrier frequency per command or profile.
+- NEC, Samsung32, Sony, RC5, RC6 and RAW send modes, with carrier frequency per command or profile.
 - Optional IR receiver and browser-assisted learning, including RAW fallback (disabled in the default XIAO build).
 - Atomic profile saves with `.bak` fallback, protected local ArduinoOTA and serial diagnostics.
 
@@ -38,20 +39,20 @@ These resistor values are a starting point; check the actual LED's forward volta
 1. Install [PlatformIO](https://platformio.org/install), Python 3 and GNU Make. Connect the XIAO ESP32C3 over USB. The classic DevKit build is available with `make build BOARD=esp32dev`.
 2. Run `make build` to generate the embedded gzip assets and factory profile header, then compile. Run `make flash 0` for `/dev/ttyACM0`, or `make flash PORT=/dev/serial/by-id/...` for a stable path. `make run 0` also opens the serial monitor. The Makefile workflow follows [AutomaticChickenFeeder](https://github.com/Friedjof/AutomaticChickenFeeder).
 3. Connect your phone to the open `TV-Remote-XXXX` WiFi network. Its suffix comes from the board's MAC address, so a different board has a different SSID. The sign-in window should open the remote automatically. Otherwise visit `http://192.168.4.1/`. If the phone says the network has no internet, choose to stay connected.
-4. Use **Finder** to try a candidate one key at a time. Save Yes/No results, then activate a candidate after two working keys. **Settings** lets you import a Flipper `.ir` file, edit/export profiles and optionally join home WiFi. An unconfigured command returns a clear error and emits no IR.
+4. Select a bundled Samsung, LG or Sony remote at the top to try its sourced codes. The default Toshiba template has no IR codes: use **Finder** to test candidates one key at a time, save Yes/No results, then activate a candidate after two working keys. **Settings** lets you import a Flipper `.ir` file, edit/export profiles and optionally join home WiFi. An unconfigured command emits no IR.
 5. Run `make monitor 0` at 115200 baud to see AP diagnostics and the per-device OTA password. Press reset to repeat the boot log.
 
 You can use the remote in a normal browser. While connected to the ESP32 AP, enter **`http://192.168.4.1/`** explicitly (including `http://`, since the ESP32 does not serve HTTPS). If it loads in the sign-in window but not in the browser, check that the phone stayed on `TV-Remote-XXXX` despite the no-internet warning; temporarily disable mobile data if it routes the browser elsewhere. The phone should receive a `192.168.4.x` address with gateway `192.168.4.1`. From your home WiFi, use the ESP32's station IP or `http://tv-remote.local/` after configuring that network in Settings; the AP address is only reachable from the AP network.
 
-The web assets and factory profiles are compiled into the firmware. No `uploadfs` step is required. On first boot the two factory profiles are copied to `/remotes/*.json` in LittleFS. Subsequent firmware uploads leave edited profiles intact. An explicit `uploadfs`, full erase or changed partition scheme may remove them; download each profile before those operations.
+The web assets and bundled profiles are compiled into the firmware. No `uploadfs` step is required. On first boot the five profiles are copied to `/remotes/*.json` in LittleFS. This update also adds the three coded TV profiles to existing installations once, without replacing saved profiles. Subsequent firmware uploads leave edited profiles intact. An explicit `uploadfs`, full erase or changed partition scheme may remove them; download each profile before those operations.
 
 ### Existing installations
 
-On an ESP32 that already has the earlier single `/config.json`, the firmware migrates its saved codes and settings into `/remotes/toshiba_tv.json` on first boot, then adds the media-player template. The old file remains as a recovery copy. The selected profile ID is stored in NVS and restored after restart.
+On an ESP32 that already has the earlier single `/config.json`, the firmware migrates its saved codes and settings into `/remotes/toshiba_tv.json` on first boot, then adds the other bundled profiles. The old file remains as a recovery copy. The selected profile ID is stored in NVS and restored after restart.
 
 ## Profile format
 
-Each JSON file has a stable lowercase `id`, a displayed `device` name, IR settings, `commands`, and the pages and buttons shown in the app. See [toshiba_tv.json](data/profiles/toshiba_tv.json) and [media_player.json](data/profiles/media_player.json) for complete examples. The factory files are templates, not working code sets.
+Each JSON file has a stable lowercase `id`, a displayed `device` name, IR settings, `commands`, and the pages and buttons shown in the app. See [toshiba_tv.json](data/profiles/toshiba_tv.json) and [media_player.json](data/profiles/media_player.json) for blank templates and the [Samsung](data/profiles/samsung_ue32f4000.json), [LG](data/profiles/lg_c1.json) and [Sony](data/profiles/sony_rmt_tx100d.json) files for coded examples. The coded examples have source metadata and are unverified on the owner's TV.
 
 ```json
 {
@@ -79,7 +80,7 @@ Each JSON file has a stable lowercase `id`, a displayed `device` name, IR settin
 }
 ```
 
-A button only appears if listed in a page group, and its `command` must exist under `commands`. Groups accept 1–4 columns. Optional button fields are `icon`, `tone`, `repeat`, `span`, `column` and `row`. The last three control grid placement. The supported icons are the SVG symbols in `data/index.html`; unknown icons simply fall back to the label. Cloning the current layout creates a new profile with its IR codes cleared.
+A button only appears if listed in a page group, and its `command` must exist under `commands`. Groups accept 1–4 columns. The last row of an automatically placed group is centered; if two buttons remain, each fills half the row. Optional button fields are `icon`, `tone`, `repeat`, `span`, `column` and `row`. The last three explicitly control grid placement and override automatic row balancing. The supported icons are the SVG symbols in `data/index.html`; unknown icons simply fall back to the label. Cloning the current layout creates a new profile with its IR codes cleared.
 
 Encoded protocols require a hexadecimal `code` string and 1–64 `bits`. RAW commands use an array of alternating mark/space microsecond `timings` and an optional 30–60 kHz `frequency`. The value `null` or an empty RAW timing array means unconfigured. A profile can have up to 96 commands and visible buttons; up to eight profiles can be stored. Hold repeat interval is 120–1000 ms.
 

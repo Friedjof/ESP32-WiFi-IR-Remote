@@ -1,4 +1,4 @@
-"""Release checks for the shipped, deliberately unconfigured profiles."""
+"""Release checks for blank templates and sourced TV profiles."""
 
 import json
 import importlib.util
@@ -11,8 +11,8 @@ PROFILES = sorted((ROOT / "data/profiles").glob("*.json"))
 
 
 class ProfileConfigurationTests(unittest.TestCase):
-    def test_two_distinct_factory_profiles(self):
-        self.assertGreaterEqual(len(PROFILES), 2)
+    def test_five_distinct_bundled_profiles(self):
+        self.assertEqual(len(PROFILES), 5)
         self.assertEqual(len(PROFILES), len({path.stem for path in PROFILES}))
 
     def test_codes_and_layout(self):
@@ -32,7 +32,28 @@ class ProfileConfigurationTests(unittest.TestCase):
                         visible.extend(button["command"] for button in group["buttons"])
                 self.assertTrue(set(visible) <= set(config["commands"]))
                 for command in config["commands"].values():
-                    self.assertIsNone(command["code"])
+                    if path.stem in {"toshiba_tv", "media_player"}:
+                        self.assertIsNone(command["code"])
+                    else:
+                        self.assertTrue(command["code"].startswith("0x"))
+                if path.stem not in {"toshiba_tv", "media_player"}:
+                    self.assertFalse(config["origin"]["target_verified"])
+                    self.assertIn("Flipper-IRDB", config["origin"]["source_url"])
+
+    def test_sourced_protocol_examples(self):
+        expected = {
+            "samsung_ue32f4000": ("SAMSUNG", "0xE0E040BF", 32, 38000),
+            "lg_c1": ("NEC", "0x20DF10EF", 32, 38000),
+            "sony_rmt_tx100d": ("SONY", "0xA90", 12, 40000),
+        }
+        for name, (protocol, code, bits, frequency) in expected.items():
+            with self.subTest(profile=name):
+                config = json.loads((ROOT / "data/profiles" / f"{name}.json").read_text())
+                power = config["commands"]["power"]
+                self.assertEqual((power["protocol"], power["code"], power["bits"], power["frequency"]),
+                                 (protocol, code, bits, frequency))
+        sony = json.loads((ROOT / "data/profiles/sony_rmt_tx100d.json").read_text())
+        self.assertEqual(sony["commands"]["back"]["bits"], 15)
 
     def test_embedded_profiles_match_source_files(self):
         script = ROOT / "scripts/profiles-to-header.py"

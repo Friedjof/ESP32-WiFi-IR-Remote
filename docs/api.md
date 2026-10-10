@@ -17,7 +17,7 @@ State-changing routes are open by default to match the open AP setup. **Settings
 | DELETE | `/api/candidates/{id}/feedback` | Clear all saved test feedback for one candidate |
 | POST | `/api/candidates/{id}/activate` | Create/select an editable remote from a candidate after two different positive results |
 | POST | `/api/import/flipper` | Import `{ "id": "my_remote", "device": "My Remote", "content": "Filetype: IR signals file\\n..." }` |
-| GET / POST | `/api/remotes` | List saved profiles / create and activate a complete JSON profile |
+| GET / POST | `/api/remotes` | List saved profiles, including `configured_commands` for each / create and activate a complete JSON profile |
 | POST | `/api/remotes/active` | Select with `{ "id": "toshiba_tv" }` |
 | DELETE | `/api/remotes/{id}` | Delete a profile; at least one must remain |
 | GET | `/api/commands` | Active profile commands, protocol, configured state and hold interval |

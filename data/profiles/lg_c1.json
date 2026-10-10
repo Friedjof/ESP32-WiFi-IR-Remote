@@ -1,0 +1,484 @@
+{
+  "id": "lg_c1",
+  "device": "LG C1 TV",
+  "default_frequency": 38000,
+  "repeat_interval_ms": 250,
+  "receiver_enabled": false,
+  "origin": {
+    "format": "Flipper IR",
+    "source": "Lucaslhm/Flipper-IRDB",
+    "source_url": "https://github.com/Lucaslhm/Flipper-IRDB/blob/a034766452e7b07cbaa03983193fc72e89e2033e/TVs/LG/LG_C1.ir",
+    "source_profile": "LG_C1.ir",
+    "target_verified": false
+  },
+  "pages": [
+    {
+      "id": "remote",
+      "label": "Remote",
+      "groups": [
+        {
+          "label": "MAIN",
+          "columns": 2,
+          "buttons": [
+            {
+              "command": "power",
+              "label": "Power",
+              "icon": "power",
+              "tone": "power"
+            },
+            {
+              "command": "input",
+              "label": "Input",
+              "icon": "input"
+            }
+          ]
+        },
+        {
+          "label": "SYSTEM",
+          "columns": 3,
+          "buttons": [
+            {
+              "command": "home",
+              "label": "Home",
+              "icon": "home"
+            },
+            {
+              "command": "back",
+              "label": "Back",
+              "icon": "back"
+            },
+            {
+              "command": "settings",
+              "label": "Settings",
+              "icon": "settings"
+            }
+          ]
+        },
+        {
+          "label": "VOLUME · CHANNEL",
+          "columns": 4,
+          "buttons": [
+            {
+              "command": "volume_down",
+              "label": "Vol −",
+              "icon": "minus",
+              "repeat": true
+            },
+            {
+              "command": "volume_up",
+              "label": "Vol +",
+              "icon": "plus",
+              "repeat": true
+            },
+            {
+              "command": "channel_down",
+              "label": "CH −",
+              "icon": "minus",
+              "repeat": true
+            },
+            {
+              "command": "channel_up",
+              "label": "CH +",
+              "icon": "plus",
+              "repeat": true
+            }
+          ]
+        },
+        {
+          "label": "NAVIGATION",
+          "columns": 3,
+          "buttons": [
+            {
+              "command": "up",
+              "label": "Up",
+              "icon": "up",
+              "repeat": true,
+              "column": 2,
+              "row": 1
+            },
+            {
+              "command": "left",
+              "label": "Left",
+              "icon": "left",
+              "repeat": true,
+              "column": 1,
+              "row": 2
+            },
+            {
+              "command": "ok",
+              "label": "OK",
+              "tone": "accent",
+              "column": 2,
+              "row": 2
+            },
+            {
+              "command": "right",
+              "label": "Right",
+              "icon": "right",
+              "repeat": true,
+              "column": 3,
+              "row": 2
+            },
+            {
+              "command": "down",
+              "label": "Down",
+              "icon": "down",
+              "repeat": true,
+              "column": 2,
+              "row": 3
+            }
+          ]
+        },
+        {
+          "label": "SOUND",
+          "columns": 3,
+          "buttons": [
+            {
+              "command": "mute",
+              "label": "Mute",
+              "icon": "mute"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "more",
+      "label": "More",
+      "groups": [
+        {
+          "label": "NUMBERS",
+          "columns": 3,
+          "buttons": [
+            {
+              "command": "digit_1",
+              "label": "1"
+            },
+            {
+              "command": "digit_2",
+              "label": "2"
+            },
+            {
+              "command": "digit_3",
+              "label": "3"
+            },
+            {
+              "command": "digit_4",
+              "label": "4"
+            },
+            {
+              "command": "digit_5",
+              "label": "5"
+            },
+            {
+              "command": "digit_6",
+              "label": "6"
+            },
+            {
+              "command": "digit_7",
+              "label": "7"
+            },
+            {
+              "command": "digit_8",
+              "label": "8"
+            },
+            {
+              "command": "digit_9",
+              "label": "9"
+            },
+            {
+              "command": "digit_0",
+              "label": "0"
+            }
+          ]
+        },
+        {
+          "label": "STREAMING",
+          "columns": 3,
+          "buttons": [
+            {
+              "command": "netflix",
+              "label": "Netflix"
+            },
+            {
+              "command": "amazon",
+              "label": "Amazon"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "commands": {
+    "power": {
+      "protocol": "NEC",
+      "code": "0x20DF10EF",
+      "bits": 32,
+      "frequency": 38000,
+      "source_name": "Power",
+      "source_protocol": "NEC",
+      "address": "04 00 00 00",
+      "command": "08 00 00 00"
+    },
+    "input": {
+      "protocol": "NEC",
+      "code": "0x20DFD02F",
+      "bits": 32,
+      "frequency": 38000,
+      "source_name": "Input",
+      "source_protocol": "NEC",
+      "address": "04 00 00 00",
+      "command": "0B 00 00 00"
+    },
+    "home": {
+      "protocol": "NEC",
+      "code": "0x20DF3EC1",
+      "bits": 32,
+      "frequency": 38000,
+      "source_name": "Home",
+      "source_protocol": "NEC",
+      "address": "04 00 00 00",
+      "command": "7C 00 00 00"
+    },
+    "back": {
+      "protocol": "NEC",
+      "code": "0x20DF14EB",
+      "bits": 32,
+      "frequency": 38000,
+      "source_name": "Back",
+      "source_protocol": "NEC",
+      "address": "04 00 00 00",
+      "command": "28 00 00 00"
+    },
+    "settings": {
+      "protocol": "NEC",
+      "code": "0x20DFC23D",
+      "bits": 32,
+      "frequency": 38000,
+      "source_name": "Settings",
+      "source_protocol": "NEC",
+      "address": "04 00 00 00",
+      "command": "43 00 00 00"
+    },
+    "volume_up": {
+      "protocol": "NEC",
+      "code": "0x20DF40BF",
+      "bits": 32,
+      "frequency": 38000,
+      "source_name": "Vol_up",
+      "source_protocol": "NEC",
+      "address": "04 00 00 00",
+      "command": "02 00 00 00"
+    },
+    "volume_down": {
+      "protocol": "NEC",
+      "code": "0x20DFC03F",
+      "bits": 32,
+      "frequency": 38000,
+      "source_name": "Vol_dn",
+      "source_protocol": "NEC",
+      "address": "04 00 00 00",
+      "command": "03 00 00 00"
+    },
+    "channel_up": {
+      "protocol": "NEC",
+      "code": "0x20DF00FF",
+      "bits": 32,
+      "frequency": 38000,
+      "source_name": "Ch_next",
+      "source_protocol": "NEC",
+      "address": "04 00 00 00",
+      "command": "00 00 00 00"
+    },
+    "channel_down": {
+      "protocol": "NEC",
+      "code": "0x20DF807F",
+      "bits": 32,
+      "frequency": 38000,
+      "source_name": "Ch_prev",
+      "source_protocol": "NEC",
+      "address": "04 00 00 00",
+      "command": "01 00 00 00"
+    },
+    "up": {
+      "protocol": "NEC",
+      "code": "0x20DF02FD",
+      "bits": 32,
+      "frequency": 38000,
+      "source_name": "Up",
+      "source_protocol": "NEC",
+      "address": "04 00 00 00",
+      "command": "40 00 00 00"
+    },
+    "down": {
+      "protocol": "NEC",
+      "code": "0x20DF827D",
+      "bits": 32,
+      "frequency": 38000,
+      "source_name": "Down",
+      "source_protocol": "NEC",
+      "address": "04 00 00 00",
+      "command": "41 00 00 00"
+    },
+    "left": {
+      "protocol": "NEC",
+      "code": "0x20DFE01F",
+      "bits": 32,
+      "frequency": 38000,
+      "source_name": "Left",
+      "source_protocol": "NEC",
+      "address": "04 00 00 00",
+      "command": "07 00 00 00"
+    },
+    "right": {
+      "protocol": "NEC",
+      "code": "0x20DF609F",
+      "bits": 32,
+      "frequency": 38000,
+      "source_name": "Right",
+      "source_protocol": "NEC",
+      "address": "04 00 00 00",
+      "command": "06 00 00 00"
+    },
+    "ok": {
+      "protocol": "NEC",
+      "code": "0x20DF22DD",
+      "bits": 32,
+      "frequency": 38000,
+      "source_name": "Enter",
+      "source_protocol": "NEC",
+      "address": "04 00 00 00",
+      "command": "44 00 00 00"
+    },
+    "mute": {
+      "protocol": "NEC",
+      "code": "0x20DF906F",
+      "bits": 32,
+      "frequency": 38000,
+      "source_name": "Mute",
+      "source_protocol": "NEC",
+      "address": "04 00 00 00",
+      "command": "09 00 00 00"
+    },
+    "netflix": {
+      "protocol": "NEC",
+      "code": "0x20DF6A95",
+      "bits": 32,
+      "frequency": 38000,
+      "source_name": "Netflix",
+      "source_protocol": "NEC",
+      "address": "04 00 00 00",
+      "command": "56 00 00 00"
+    },
+    "amazon": {
+      "protocol": "NEC",
+      "code": "0x20DF3AC5",
+      "bits": 32,
+      "frequency": 38000,
+      "source_name": "Amazon",
+      "source_protocol": "NEC",
+      "address": "04 00 00 00",
+      "command": "5C 00 00 00"
+    },
+    "digit_0": {
+      "protocol": "NEC",
+      "code": "0x20DF08F7",
+      "bits": 32,
+      "frequency": 38000,
+      "source_name": "0",
+      "source_protocol": "NEC",
+      "address": "04 00 00 00",
+      "command": "10 00 00 00"
+    },
+    "digit_1": {
+      "protocol": "NEC",
+      "code": "0x20DF8877",
+      "bits": 32,
+      "frequency": 38000,
+      "source_name": "1",
+      "source_protocol": "NEC",
+      "address": "04 00 00 00",
+      "command": "11 00 00 00"
+    },
+    "digit_2": {
+      "protocol": "NEC",
+      "code": "0x20DF48B7",
+      "bits": 32,
+      "frequency": 38000,
+      "source_name": "2",
+      "source_protocol": "NEC",
+      "address": "04 00 00 00",
+      "command": "12 00 00 00"
+    },
+    "digit_3": {
+      "protocol": "NEC",
+      "code": "0x20DFC837",
+      "bits": 32,
+      "frequency": 38000,
+      "source_name": "3",
+      "source_protocol": "NEC",
+      "address": "04 00 00 00",
+      "command": "13 00 00 00"
+    },
+    "digit_4": {
+      "protocol": "NEC",
+      "code": "0x20DF28D7",
+      "bits": 32,
+      "frequency": 38000,
+      "source_name": "4",
+      "source_protocol": "NEC",
+      "address": "04 00 00 00",
+      "command": "14 00 00 00"
+    },
+    "digit_5": {
+      "protocol": "NEC",
+      "code": "0x20DFA857",
+      "bits": 32,
+      "frequency": 38000,
+      "source_name": "5",
+      "source_protocol": "NEC",
+      "address": "04 00 00 00",
+      "command": "15 00 00 00"
+    },
+    "digit_6": {
+      "protocol": "NEC",
+      "code": "0x20DF6897",
+      "bits": 32,
+      "frequency": 38000,
+      "source_name": "6",
+      "source_protocol": "NEC",
+      "address": "04 00 00 00",
+      "command": "16 00 00 00"
+    },
+    "digit_7": {
+      "protocol": "NEC",
+      "code": "0x20DFE817",
+      "bits": 32,
+      "frequency": 38000,
+      "source_name": "7",
+      "source_protocol": "NEC",
+      "address": "04 00 00 00",
+      "command": "17 00 00 00"
+    },
+    "digit_8": {
+      "protocol": "NEC",
+      "code": "0x20DF18E7",
+      "bits": 32,
+      "frequency": 38000,
+      "source_name": "8",
+      "source_protocol": "NEC",
+      "address": "04 00 00 00",
+      "command": "18 00 00 00"
+    },
+    "digit_9": {
+      "protocol": "NEC",
+      "code": "0x20DF9867",
+      "bits": 32,
+      "frequency": 38000,
+      "source_name": "9",
+      "source_protocol": "NEC",
+      "address": "04 00 00 00",
+      "command": "19 00 00 00"
+    }
+  }
+}

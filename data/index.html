@@ -54,7 +54,7 @@
         <div id="finder-question" class="finder-question" hidden><strong>Did the TV react?</strong><div class="toolbar"><button id="finder-yes" class="primary" type="button">Yes</button><button id="finder-no" type="button">No</button></div></div>
         <p id="finder-progress" class="finder-progress"></p>
       </div>
-      <div class="card"><h2>Import a Flipper remote</h2><p>Import a local <code>.ir</code> file with NEC, NECext, RC5, RC6 or RAW signals. Unsupported protocols produce an error. The file becomes a separate saved remote.</p>
+      <div class="card"><h2>Import a Flipper remote</h2><p>Import a local <code>.ir</code> file with NEC, NECext, Samsung32, Sony SIRC/SIRC15, RC5, RC6 or RAW signals. Unsupported protocols produce an error. The file becomes a separate saved remote.</p>
         <label for="flipper-name">Remote name</label><input id="flipper-name" maxlength="80" placeholder="e.g. Toshiba CT-8543">
         <label class="file-button">Choose .ir file<input id="flipper-file" type="file" accept=".ir,text/plain"></label>
         <p id="flipper-selected" class="finder-progress">No file selected.</p>
@@ -69,7 +69,7 @@
       </div>
       <div class="card"><h2>Edit one IR key</h2><p>Update a signal without editing the whole JSON file. Leave the code or RAW timings empty to mark this key unconfigured.</p>
         <label for="key-edit-command">Key</label><select id="key-edit-command"></select>
-        <div class="finder-row"><div><label for="key-edit-protocol">Protocol</label><select id="key-edit-protocol"><option>NEC</option><option>SONY</option><option>RC5</option><option>RC6</option><option>RAW</option></select></div><div><label for="key-edit-frequency">Frequency (Hz)</label><input id="key-edit-frequency" type="number" min="30000" max="60000" step="1000"></div></div>
+        <div class="finder-row"><div><label for="key-edit-protocol">Protocol</label><select id="key-edit-protocol"><option>NEC</option><option>SAMSUNG</option><option>SONY</option><option>RC5</option><option>RC6</option><option>RAW</option></select></div><div><label for="key-edit-frequency">Frequency (Hz)</label><input id="key-edit-frequency" type="number" min="30000" max="60000" step="1000"></div></div>
         <div id="key-edit-encoded"><div class="finder-row"><div><label for="key-edit-code">Hex code</label><input id="key-edit-code" placeholder="0x…" spellcheck="false"></div><div><label for="key-edit-bits">Bits</label><input id="key-edit-bits" type="number" min="1" max="64"></div></div></div>
         <div id="key-edit-raw" hidden><label for="key-edit-timings">RAW timings (microseconds, space-separated)</label><textarea id="key-edit-timings" rows="4" spellcheck="false"></textarea></div>
         <button id="key-edit-save" class="primary" type="button">Save key</button>

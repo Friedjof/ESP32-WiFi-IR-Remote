@@ -41,6 +41,10 @@ function notice(message, success = false) {
 }
 
 async function sendCommand(name, held = false) {
+  if (!commands[name]?.configured) {
+    notice(`${prettyKey(name)} has no IR code in ${profile?.device || 'this remote'}. Choose a coded remote or open Finder.`);
+    return;
+  }
   try {
     await api(`/api/commands/${encodeURIComponent(name)}/send`, {method:'POST', headers:{'X-IR-Held':held ? '1' : '0'}});
   } catch (error) { notice(`${name.replaceAll('_',' ')}: ${error.message}`); }
@@ -58,6 +62,7 @@ function bindButton(button, spec) {
   button.addEventListener('pointerdown', event => {
     if (event.button !== 0) return;
     stopHold();
+    if (!commands[spec.command]?.configured) { sendCommand(spec.command); return; }
     heldButton = button;
     button.classList.add('pressed');
     button.setPointerCapture(event.pointerId);
@@ -139,6 +144,18 @@ function renderRemote() {
     section.setAttribute('aria-label', page.label);
     const shell = document.createElement('div');
     shell.className = 'remote-shell';
+    if (!Object.values(commands).some(command => command.configured)) {
+      const setup = document.createElement('div');
+      setup.className = 'remote-setup';
+      const message = document.createElement('span');
+      message.textContent = 'This remote has no IR codes yet.';
+      const finder = document.createElement('button');
+      finder.type = 'button';
+      finder.textContent = 'Find codes';
+      finder.addEventListener('click', () => activateTab('finder'));
+      setup.append(message, finder);
+      section.append(setup);
+    }
     for (const group of page.groups) {
       const wrapper = document.createElement('div');
       wrapper.className = 'button-group';
@@ -148,7 +165,23 @@ function renderRemote() {
       const grid = document.createElement('div');
       grid.className = 'button-grid';
       grid.style.setProperty('--columns', group.columns);
-      group.buttons.forEach(spec => grid.append(makeButton(spec)));
+      if (group.buttons.some(spec => spec.column || spec.row || spec.span)) {
+        group.buttons.forEach(spec => grid.append(makeButton(spec)));
+      } else {
+        grid.classList.add('flow');
+        for (let index = 0; index < group.buttons.length; index += group.columns) {
+          const row = document.createElement('div');
+          row.className = 'button-row';
+          const items = group.buttons.slice(index, index + group.columns);
+          row.style.setProperty('--items', items.length);
+          if (items.length === 1) {
+            row.classList.add('single');
+            row.style.setProperty('--single-width', `calc((100% - ${(group.columns - 1) * 7}px) / ${group.columns})`);
+          }
+          items.forEach(spec => row.append(makeButton(spec)));
+          grid.append(row);
+        }
+      }
       wrapper.append(heading, grid);
       shell.append(wrapper);
     }
@@ -171,14 +204,17 @@ async function refreshProfile() {
     repeatInterval = commandList.repeat_interval_ms || 250;
     $('#target').textContent = profile.device;
     const confirmed = profile.origin?.confirmed_commands || [];
+    const configuredCount = Object.values(commands).filter(command => command.configured).length;
     $('#profile-proof').textContent = confirmed.length ?
-      `Tested working: ${confirmed.map(prettyKey).join(', ')}` : 'No keys confirmed on this device yet.';
+      `Tested working: ${confirmed.map(prettyKey).join(', ')}` :
+      configuredCount ? `${configuredCount} IR codes loaded · not tested on this device` :
+      'No IR codes in this remote. Open Finder to test candidates.';
     $('#config-editor').value = JSON.stringify(profile, null, 2);
     const select = $('#profile-select');
     select.replaceChildren(...remoteList.profiles.map(item => {
       const option = document.createElement('option');
       option.value = item.id;
-      option.textContent = item.device;
+      option.textContent = item.configured_commands ? item.device : `${item.device} · no IR codes`;
       return option;
     }));
     select.value = remoteList.active;
@@ -404,7 +440,8 @@ $('#key-edit-protocol').addEventListener('change', () => {
   else $('#key-edit-frequency').value = 38000;
   if (protocol === 'RC5') $('#key-edit-bits').value = 12;
   if (protocol === 'RC6') $('#key-edit-bits').value = 20;
-  if (protocol === 'NEC') $('#key-edit-bits').value = 32;
+  if (protocol === 'SONY') $('#key-edit-bits').value = 12;
+  if (protocol === 'NEC' || protocol === 'SAMSUNG') $('#key-edit-bits').value = 32;
 });
 $('#key-edit-save').addEventListener('click', async () => {
   if (!profile) return;

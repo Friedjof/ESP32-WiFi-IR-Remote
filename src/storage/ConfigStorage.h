@@ -32,7 +32,7 @@ class ConfigStorage {
   bool loadPath(const char* path, JsonDocument& target) const;
   bool loadProfile(const String& id, JsonDocument& target) const;
   bool writeProfile(const String& id, const JsonDocument& source, String& error);
-  bool installFactories();
+  bool installFactories(bool includeTemplates);
   bool migrateLegacy();
   size_t profileCount() const;
   bool validate(JsonDocument& doc, String& error) const;

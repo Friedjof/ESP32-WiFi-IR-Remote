@@ -1,0 +1,624 @@
+{
+  "id": "samsung_ue32f4000",
+  "device": "Samsung UE32F4000 · AA59-00741A",
+  "default_frequency": 38000,
+  "repeat_interval_ms": 250,
+  "receiver_enabled": false,
+  "origin": {
+    "format": "Flipper IR",
+    "source": "Lucaslhm/Flipper-IRDB",
+    "source_url": "https://github.com/Lucaslhm/Flipper-IRDB/blob/8aa36d9aa01ce2c5a5c889c294b9458b53599596/TVs/Samsung/Samsung_UE32F4000.ir",
+    "source_profile": "Samsung_UE32F4000.ir",
+    "target_verified": false
+  },
+  "pages": [
+    {
+      "id": "remote",
+      "label": "Remote",
+      "groups": [
+        {
+          "label": "MAIN",
+          "columns": 2,
+          "buttons": [
+            {
+              "command": "power",
+              "label": "Power",
+              "icon": "power",
+              "tone": "power"
+            },
+            {
+              "command": "input",
+              "label": "Source",
+              "icon": "input"
+            }
+          ]
+        },
+        {
+          "label": "SYSTEM",
+          "columns": 4,
+          "buttons": [
+            {
+              "command": "menu",
+              "label": "Menu",
+              "icon": "menu"
+            },
+            {
+              "command": "back",
+              "label": "Back",
+              "icon": "back"
+            },
+            {
+              "command": "exit",
+              "label": "Exit",
+              "icon": "exit"
+            },
+            {
+              "command": "info",
+              "label": "Info",
+              "icon": "info"
+            }
+          ]
+        },
+        {
+          "label": "VOLUME · CHANNEL",
+          "columns": 4,
+          "buttons": [
+            {
+              "command": "volume_down",
+              "label": "Vol −",
+              "icon": "minus",
+              "repeat": true
+            },
+            {
+              "command": "volume_up",
+              "label": "Vol +",
+              "icon": "plus",
+              "repeat": true
+            },
+            {
+              "command": "channel_down",
+              "label": "CH −",
+              "icon": "minus",
+              "repeat": true
+            },
+            {
+              "command": "channel_up",
+              "label": "CH +",
+              "icon": "plus",
+              "repeat": true
+            }
+          ]
+        },
+        {
+          "label": "NAVIGATION",
+          "columns": 3,
+          "buttons": [
+            {
+              "command": "up",
+              "label": "Up",
+              "icon": "up",
+              "repeat": true,
+              "column": 2,
+              "row": 1
+            },
+            {
+              "command": "left",
+              "label": "Left",
+              "icon": "left",
+              "repeat": true,
+              "column": 1,
+              "row": 2
+            },
+            {
+              "command": "ok",
+              "label": "OK",
+              "tone": "accent",
+              "column": 2,
+              "row": 2
+            },
+            {
+              "command": "right",
+              "label": "Right",
+              "icon": "right",
+              "repeat": true,
+              "column": 3,
+              "row": 2
+            },
+            {
+              "command": "down",
+              "label": "Down",
+              "icon": "down",
+              "repeat": true,
+              "column": 2,
+              "row": 3
+            }
+          ]
+        },
+        {
+          "label": "MEDIA",
+          "columns": 4,
+          "buttons": [
+            {
+              "command": "mute",
+              "label": "Mute",
+              "icon": "mute"
+            },
+            {
+              "command": "play",
+              "label": "Play",
+              "icon": "play"
+            },
+            {
+              "command": "pause",
+              "label": "Pause",
+              "icon": "pause"
+            },
+            {
+              "command": "stop",
+              "label": "Stop",
+              "icon": "stop"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "more",
+      "label": "More",
+      "groups": [
+        {
+          "label": "NUMBERS",
+          "columns": 3,
+          "buttons": [
+            {
+              "command": "digit_1",
+              "label": "1"
+            },
+            {
+              "command": "digit_2",
+              "label": "2"
+            },
+            {
+              "command": "digit_3",
+              "label": "3"
+            },
+            {
+              "command": "digit_4",
+              "label": "4"
+            },
+            {
+              "command": "digit_5",
+              "label": "5"
+            },
+            {
+              "command": "digit_6",
+              "label": "6"
+            },
+            {
+              "command": "digit_7",
+              "label": "7"
+            },
+            {
+              "command": "digit_8",
+              "label": "8"
+            },
+            {
+              "command": "digit_9",
+              "label": "9"
+            },
+            {
+              "command": "digit_0",
+              "label": "0"
+            }
+          ]
+        },
+        {
+          "label": "EXTRAS",
+          "columns": 3,
+          "buttons": [
+            {
+              "command": "guide",
+              "label": "Guide"
+            },
+            {
+              "command": "tools",
+              "label": "Tools"
+            },
+            {
+              "command": "subtitle",
+              "label": "Subtitles"
+            }
+          ]
+        },
+        {
+          "label": "COLOURS",
+          "columns": 4,
+          "buttons": [
+            {
+              "command": "red",
+              "label": "Red",
+              "tone": "red"
+            },
+            {
+              "command": "green",
+              "label": "Green",
+              "tone": "green"
+            },
+            {
+              "command": "yellow",
+              "label": "Yellow",
+              "tone": "yellow"
+            },
+            {
+              "command": "blue",
+              "label": "Blue",
+              "tone": "blue"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "commands": {
+    "power": {
+      "protocol": "SAMSUNG",
+      "code": "0xE0E040BF",
+      "bits": 32,
+      "frequency": 38000,
+      "source_name": "Power",
+      "source_protocol": "Samsung32",
+      "address": "07 00 00 00",
+      "command": "02 00 00 00"
+    },
+    "input": {
+      "protocol": "SAMSUNG",
+      "code": "0xE0E0807F",
+      "bits": 32,
+      "frequency": 38000,
+      "source_name": "Source",
+      "source_protocol": "Samsung32",
+      "address": "07 00 00 00",
+      "command": "01 00 00 00"
+    },
+    "menu": {
+      "protocol": "SAMSUNG",
+      "code": "0xE0E058A7",
+      "bits": 32,
+      "frequency": 38000,
+      "source_name": "Menu",
+      "source_protocol": "Samsung32",
+      "address": "07 00 00 00",
+      "command": "1A 00 00 00"
+    },
+    "back": {
+      "protocol": "SAMSUNG",
+      "code": "0xE0E01AE5",
+      "bits": 32,
+      "frequency": 38000,
+      "source_name": "Return",
+      "source_protocol": "Samsung32",
+      "address": "07 00 00 00",
+      "command": "58 00 00 00"
+    },
+    "exit": {
+      "protocol": "SAMSUNG",
+      "code": "0xE0E0B44B",
+      "bits": 32,
+      "frequency": 38000,
+      "source_name": "Exit",
+      "source_protocol": "Samsung32",
+      "address": "07 00 00 00",
+      "command": "2D 00 00 00"
+    },
+    "info": {
+      "protocol": "SAMSUNG",
+      "code": "0xE0E0F807",
+      "bits": 32,
+      "frequency": 38000,
+      "source_name": "Info",
+      "source_protocol": "Samsung32",
+      "address": "07 00 00 00",
+      "command": "1F 00 00 00"
+    },
+    "volume_up": {
+      "protocol": "SAMSUNG",
+      "code": "0xE0E0E01F",
+      "bits": 32,
+      "frequency": 38000,
+      "source_name": "Vol_up",
+      "source_protocol": "Samsung32",
+      "address": "07 00 00 00",
+      "command": "07 00 00 00"
+    },
+    "volume_down": {
+      "protocol": "SAMSUNG",
+      "code": "0xE0E0D02F",
+      "bits": 32,
+      "frequency": 38000,
+      "source_name": "Vol_dn",
+      "source_protocol": "Samsung32",
+      "address": "07 00 00 00",
+      "command": "0B 00 00 00"
+    },
+    "channel_up": {
+      "protocol": "SAMSUNG",
+      "code": "0xE0E048B7",
+      "bits": 32,
+      "frequency": 38000,
+      "source_name": "Ch_next",
+      "source_protocol": "Samsung32",
+      "address": "07 00 00 00",
+      "command": "12 00 00 00"
+    },
+    "channel_down": {
+      "protocol": "SAMSUNG",
+      "code": "0xE0E008F7",
+      "bits": 32,
+      "frequency": 38000,
+      "source_name": "Ch_prev",
+      "source_protocol": "Samsung32",
+      "address": "07 00 00 00",
+      "command": "10 00 00 00"
+    },
+    "up": {
+      "protocol": "SAMSUNG",
+      "code": "0xE0E006F9",
+      "bits": 32,
+      "frequency": 38000,
+      "source_name": "Up",
+      "source_protocol": "Samsung32",
+      "address": "07 00 00 00",
+      "command": "60 00 00 00"
+    },
+    "down": {
+      "protocol": "SAMSUNG",
+      "code": "0xE0E08679",
+      "bits": 32,
+      "frequency": 38000,
+      "source_name": "Down",
+      "source_protocol": "Samsung32",
+      "address": "07 00 00 00",
+      "command": "61 00 00 00"
+    },
+    "left": {
+      "protocol": "SAMSUNG",
+      "code": "0xE0E0A659",
+      "bits": 32,
+      "frequency": 38000,
+      "source_name": "Left",
+      "source_protocol": "Samsung32",
+      "address": "07 00 00 00",
+      "command": "65 00 00 00"
+    },
+    "right": {
+      "protocol": "SAMSUNG",
+      "code": "0xE0E046B9",
+      "bits": 32,
+      "frequency": 38000,
+      "source_name": "Right",
+      "source_protocol": "Samsung32",
+      "address": "07 00 00 00",
+      "command": "62 00 00 00"
+    },
+    "ok": {
+      "protocol": "SAMSUNG",
+      "code": "0xE0E016E9",
+      "bits": 32,
+      "frequency": 38000,
+      "source_name": "Ok",
+      "source_protocol": "Samsung32",
+      "address": "07 00 00 00",
+      "command": "68 00 00 00"
+    },
+    "mute": {
+      "protocol": "SAMSUNG",
+      "code": "0xE0E0F00F",
+      "bits": 32,
+      "frequency": 38000,
+      "source_name": "Mute",
+      "source_protocol": "Samsung32",
+      "address": "07 00 00 00",
+      "command": "0F 00 00 00"
+    },
+    "play": {
+      "protocol": "SAMSUNG",
+      "code": "0xE0E0E21D",
+      "bits": 32,
+      "frequency": 38000,
+      "source_name": "Play",
+      "source_protocol": "Samsung32",
+      "address": "07 00 00 00",
+      "command": "47 00 00 00"
+    },
+    "pause": {
+      "protocol": "SAMSUNG",
+      "code": "0xE0E052AD",
+      "bits": 32,
+      "frequency": 38000,
+      "source_name": "Pause",
+      "source_protocol": "Samsung32",
+      "address": "07 00 00 00",
+      "command": "4A 00 00 00"
+    },
+    "stop": {
+      "protocol": "SAMSUNG",
+      "code": "0xE0E0629D",
+      "bits": 32,
+      "frequency": 38000,
+      "source_name": "Stop",
+      "source_protocol": "Samsung32",
+      "address": "07 00 00 00",
+      "command": "46 00 00 00"
+    },
+    "guide": {
+      "protocol": "SAMSUNG",
+      "code": "0xE0E0F20D",
+      "bits": 32,
+      "frequency": 38000,
+      "source_name": "Guide",
+      "source_protocol": "Samsung32",
+      "address": "07 00 00 00",
+      "command": "4F 00 00 00"
+    },
+    "tools": {
+      "protocol": "SAMSUNG",
+      "code": "0xE0E0D22D",
+      "bits": 32,
+      "frequency": 38000,
+      "source_name": "Tools",
+      "source_protocol": "Samsung32",
+      "address": "07 00 00 00",
+      "command": "4B 00 00 00"
+    },
+    "subtitle": {
+      "protocol": "SAMSUNG",
+      "code": "0xE0E0A45B",
+      "bits": 32,
+      "frequency": 38000,
+      "source_name": "Ad/subt.",
+      "source_protocol": "Samsung32",
+      "address": "07 00 00 00",
+      "command": "25 00 00 00"
+    },
+    "red": {
+      "protocol": "SAMSUNG",
+      "code": "0xE0E036C9",
+      "bits": 32,
+      "frequency": 38000,
+      "source_name": "A/red",
+      "source_protocol": "Samsung32",
+      "address": "07 00 00 00",
+      "command": "6C 00 00 00"
+    },
+    "green": {
+      "protocol": "SAMSUNG",
+      "code": "0xE0E028D7",
+      "bits": 32,
+      "frequency": 38000,
+      "source_name": "B/green",
+      "source_protocol": "Samsung32",
+      "address": "07 00 00 00",
+      "command": "14 00 00 00"
+    },
+    "yellow": {
+      "protocol": "SAMSUNG",
+      "code": "0xE0E0A857",
+      "bits": 32,
+      "frequency": 38000,
+      "source_name": "C/yellow",
+      "source_protocol": "Samsung32",
+      "address": "07 00 00 00",
+      "command": "15 00 00 00"
+    },
+    "blue": {
+      "protocol": "SAMSUNG",
+      "code": "0xE0E06897",
+      "bits": 32,
+      "frequency": 38000,
+      "source_name": "D/blue",
+      "source_protocol": "Samsung32",
+      "address": "07 00 00 00",
+      "command": "16 00 00 00"
+    },
+    "digit_0": {
+      "protocol": "SAMSUNG",
+      "code": "0xE0E08877",
+      "bits": 32,
+      "frequency": 38000,
+      "source_name": "0",
+      "source_protocol": "Samsung32",
+      "address": "07 00 00 00",
+      "command": "11 00 00 00"
+    },
+    "digit_1": {
+      "protocol": "SAMSUNG",
+      "code": "0xE0E020DF",
+      "bits": 32,
+      "frequency": 38000,
+      "source_name": "1",
+      "source_protocol": "Samsung32",
+      "address": "07 00 00 00",
+      "command": "04 00 00 00"
+    },
+    "digit_2": {
+      "protocol": "SAMSUNG",
+      "code": "0xE0E0A05F",
+      "bits": 32,
+      "frequency": 38000,
+      "source_name": "2",
+      "source_protocol": "Samsung32",
+      "address": "07 00 00 00",
+      "command": "05 00 00 00"
+    },
+    "digit_3": {
+      "protocol": "SAMSUNG",
+      "code": "0xE0E0609F",
+      "bits": 32,
+      "frequency": 38000,
+      "source_name": "3",
+      "source_protocol": "Samsung32",
+      "address": "07 00 00 00",
+      "command": "06 00 00 00"
+    },
+    "digit_4": {
+      "protocol": "SAMSUNG",
+      "code": "0xE0E010EF",
+      "bits": 32,
+      "frequency": 38000,
+      "source_name": "4",
+      "source_protocol": "Samsung32",
+      "address": "07 00 00 00",
+      "command": "08 00 00 00"
+    },
+    "digit_5": {
+      "protocol": "SAMSUNG",
+      "code": "0xE0E0906F",
+      "bits": 32,
+      "frequency": 38000,
+      "source_name": "5",
+      "source_protocol": "Samsung32",
+      "address": "07 00 00 00",
+      "command": "09 00 00 00"
+    },
+    "digit_6": {
+      "protocol": "SAMSUNG",
+      "code": "0xE0E050AF",
+      "bits": 32,
+      "frequency": 38000,
+      "source_name": "6",
+      "source_protocol": "Samsung32",
+      "address": "07 00 00 00",
+      "command": "0A 00 00 00"
+    },
+    "digit_7": {
+      "protocol": "SAMSUNG",
+      "code": "0xE0E030CF",
+      "bits": 32,
+      "frequency": 38000,
+      "source_name": "7",
+      "source_protocol": "Samsung32",
+      "address": "07 00 00 00",
+      "command": "0C 00 00 00"
+    },
+    "digit_8": {
+      "protocol": "SAMSUNG",
+      "code": "0xE0E0B04F",
+      "bits": 32,
+      "frequency": 38000,
+      "source_name": "8",
+      "source_protocol": "Samsung32",
+      "address": "07 00 00 00",
+      "command": "0D 00 00 00"
+    },
+    "digit_9": {
+      "protocol": "SAMSUNG",
+      "code": "0xE0E0708F",
+      "bits": 32,
+      "frequency": 38000,
+      "source_name": "9",
+      "source_protocol": "Samsung32",
+      "address": "07 00 00 00",
+      "command": "0E 00 00 00"
+    }
+  }
+}

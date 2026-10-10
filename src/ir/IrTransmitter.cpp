@@ -22,6 +22,9 @@ void IrTransmitter::loop() {
                                kNecMinCommandLength, job.code, job.bits, job.frequency,
                                true, 0, 33);
       break;
+    case IrProtocol::Samsung:
+      sender_.sendSAMSUNG(job.code, job.bits);
+      break;
     case IrProtocol::Sony:
       if (job.frequency == 38000) sender_.sendSony38(job.code, job.bits);
       else if (job.frequency == 40000) sender_.sendSony(job.code, job.bits);
