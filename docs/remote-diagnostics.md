@@ -28,7 +28,7 @@ The laptop and ESP32 must be on the same reachable local network. ArduinoOTA lis
 make ota OTA_HOST=192.168.1.123
 ```
 
-Replace the example address with the `station_ip` shown in Status. `OTA_HOST=tv-remote.local` also works when mDNS resolves. The Makefile builds the XIAO ESP32C3 firmware and uses PlatformIO's `espota` uploader. Wait for the upload and restart, then reload **Status** and confirm the new firmware version. If the home router isolates wireless clients or a laptop firewall blocks the OTA callback, put the laptop on the ESP32 access point and run the same command with `OTA_HOST=192.168.4.1`.
+Replace the example address with the `station_ip` shown in Status. `OTA_HOST=tv-remote.local` also works when mDNS resolves. The Makefile builds the XIAO ESP32C3 firmware and uses PlatformIO's `espota` uploader. Disable a VPN that routes the ESP32's local address away from the home network; this laptop's `home` WireGuard connection has done so for `192.168.3.27`. Wait for the upload and restart, then reload **Status** and confirm the new firmware version. If the home router isolates wireless clients or a laptop firewall blocks the OTA callback, put the laptop on the ESP32 access point and run the same command with `OTA_HOST=192.168.4.1`.
 
 OTA changes the firmware partition only. It does not upload the LittleFS image or replace saved remote profiles. Keep USB access available for recovery if a firmware build stops joining WiFi or serving OTA.
 
