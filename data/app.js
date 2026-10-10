@@ -88,7 +88,8 @@ function makeButton(spec) {
   button.setAttribute('aria-label', spec.label);
   if (tones.has(spec.tone)) button.classList.add(`tone-${spec.tone}`);
   if (!commands[spec.command]?.configured) button.classList.add('unconfigured');
-  const confirmed = profile?.origin?.confirmed_commands?.includes(spec.command);
+  const confirmed = profile?.origin?.confirmed_commands?.includes(spec.command) ||
+    profile?.commands?.[spec.command]?.tested_on_target;
   if (confirmed) button.classList.add('confirmed');
   button.title = !commands[spec.command]?.configured ? `${spec.label}: IR code not configured` :
     confirmed ? `${spec.label}: marked working during Finder test` : `${spec.label}: not confirmed on this TV`;
@@ -215,7 +216,8 @@ async function refreshProfile() {
     $('#arrange-flipper').disabled = profile.origin?.format !== 'Flipper IR';
     repeatInterval = commandList.repeat_interval_ms || 250;
     $('#target').textContent = profile.device;
-    const confirmed = profile.origin?.confirmed_commands || [];
+    const confirmed = [...new Set([...(profile.origin?.confirmed_commands || []),
+      ...Object.keys(profile.commands).filter(name => profile.commands[name]?.tested_on_target)])];
     const configuredCount = Object.values(commands).filter(command => command.configured).length;
     $('#profile-proof').textContent = confirmed.length ?
       `Tested working: ${confirmed.map(prettyKey).join(', ')}` :
@@ -345,6 +347,7 @@ function renderFinder() {
   const good = Object.entries(results).filter(([, worked]) => worked).map(([name]) => prettyKey(name));
   const bad = Object.entries(results).filter(([, worked]) => !worked).map(([name]) => prettyKey(name));
   $('#finder-progress').textContent = `Worked: ${good.join(', ') || 'none'} · Did not work: ${bad.join(', ') || 'none'}. Confirm two different keys to save.`;
+  $('#finder-apply').disabled = results[keyPicker.value] !== true;
   $('#finder-activate').disabled = good.length < 2;
   $('#finder-question').hidden = true;
   lastFinderTest = null;
@@ -359,6 +362,7 @@ async function loadCandidates() {
 
 $('#finder-brand').addEventListener('change', renderFinder);
 $('#finder-profile').addEventListener('change', renderFinder);
+$('#finder-command').addEventListener('change', renderFinder);
 $('#finder-test').addEventListener('click', async () => {
   const id = $('#finder-profile').value, command = $('#finder-command').value;
   if (!id || !command) return;
@@ -383,6 +387,56 @@ async function answerFinder(worked) {
 }
 $('#finder-yes').addEventListener('click', () => answerFinder(true));
 $('#finder-no').addEventListener('click', () => answerFinder(false));
+
+function addVisibleFinderKey(config, name) {
+  if (config.pages.some(page => page.groups.some(group =>
+    group.buttons.some(button => button.command === name)))) return;
+  const groupNames = {
+    power:'MAIN', input:'MAIN', volume_up:'VOLUME', volume_down:'VOLUME',
+    channel_up:'CHANNEL', channel_down:'CHANNEL', up:'NAVIGATION', down:'NAVIGATION',
+    left:'NAVIGATION', right:'NAVIGATION', ok:'NAVIGATION',
+    home:'SYSTEM', back:'SYSTEM', menu:'SYSTEM', exit:'SYSTEM'
+  };
+  const groupName = groupNames[name] || 'ADDED';
+  const page = config.pages.find(item => item.id === 'remote') || config.pages[0];
+  let group = page.groups.find(item => item.label.toUpperCase() === groupName);
+  if (!group) {
+    group = {label:groupName, columns:groupName === 'NAVIGATION' ? 3 :
+      ['VOLUME','CHANNEL'].includes(groupName) ? 1 : groupName === 'MAIN' ? 2 : 4, buttons:[]};
+    const mainIndex = page.groups.findIndex(item => item.label.toUpperCase() === 'MAIN');
+    page.groups.splice(mainIndex < 0 ? page.groups.length : mainIndex + 1, 0, group);
+  }
+  const labels = {volume_up:'Vol +', volume_down:'Vol −', channel_up:'CH +', channel_down:'CH −', ok:'OK'};
+  const icons = {volume_up:'plus', volume_down:'minus', channel_up:'plus', channel_down:'minus'};
+  const button = {command:name, label:labels[name] || prettyKey(name)};
+  const icon = icons[name] || (iconIds.has(name) ? name : null);
+  if (icon) button.icon = icon;
+  if (name === 'ok') button.tone = 'accent';
+  if (['volume_up','volume_down','channel_up','channel_down','up','down','left','right'].includes(name)) button.repeat = true;
+  const navPositions = {up:[2,1],left:[1,2],ok:[2,2],right:[3,2],down:[2,3]};
+  if (groupName === 'NAVIGATION' && navPositions[name]) {
+    [button.column, button.row] = navPositions[name];
+  }
+  group.buttons.push(button);
+}
+
+$('#finder-apply').addEventListener('click', async () => {
+  const id = $('#finder-profile').value, name = $('#finder-command').value;
+  const candidate = finderCatalog.find(item => item.id === id);
+  if (!profile || !candidate?.commands[name] || finderFeedback[id]?.[name] !== true) return;
+  if (profile.commands[name]?.code &&
+      !confirm(`Replace ${prettyKey(name)} in ${profile.device} with the tested ${candidate.name} signal?`)) return;
+  const updated = JSON.parse(JSON.stringify(profile));
+  updated.commands[name] = {...candidate.commands[name], source_candidate:id,
+    source_url:candidate.url, tested_on_target:true};
+  addVisibleFinderKey(updated, name);
+  try {
+    await api('/api/config', {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(updated)});
+    await refreshProfile();
+    notice(`${prettyKey(name)} saved to ${updated.device}.`, true);
+  } catch (error) { notice(`Key not saved: ${error.message}`); }
+});
+
 $('#finder-activate').addEventListener('click', async () => {
   const id = $('#finder-profile').value;
   if (!id || !confirm('Save this candidate as a remote? Commands you have not tested may still be wrong for your TV.')) return;

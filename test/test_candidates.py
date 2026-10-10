@@ -36,6 +36,11 @@ class CandidateCatalogTests(unittest.TestCase):
         self.assertEqual(profile['commands']['volume_up']['code'], '0x050')
         self.assertEqual(profile['commands']['volume_up']['bits'], 12)
 
+    def test_menu_candidates_are_separate_from_ct8560(self):
+        self.assertNotIn('menu', self.profiles['toshiba_ct8560']['commands'])
+        self.assertIn('menu', self.profiles['toshiba_ct8563']['commands'])
+        self.assertIn('menu', self.profiles['vestel_generic']['commands'])
+
     def test_embedded_catalog_is_current(self):
         raw = json.dumps({'profiles': list(self.profiles.values())}, separators=(',', ':')).encode()
         header = (ROOT / 'include/generated/candidates.h').read_text()

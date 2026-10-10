@@ -55,6 +55,8 @@ After two different successful keys, `POST /api/candidates/toshiba_ct8563/activa
 curl -X POST http://192.168.4.1/api/commands/volume_up/send
 ```
 
+The Finder's **Use tested key in remote** action copies one positively confirmed candidate signal into the active profile through `PUT /api/config`. It adds a visible button if that command is absent and records its source on the command. The CT-8560 Flipper file contains no Menu signal. Finder has separate, unverified CT-8563 RC5 and generic Vestel Menu candidates. Test each deliberately before copying a signal into the active remote.
+
 Accepted command response:
 
 ```json
