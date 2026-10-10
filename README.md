@@ -41,6 +41,8 @@ These resistor values are a starting point; check the actual LED's forward volta
 4. Use **Finder** to try a candidate one key at a time. Save Yes/No results, then activate a candidate after two working keys. **Settings** lets you import a Flipper `.ir` file, edit/export profiles and optionally join home WiFi. An unconfigured command returns a clear error and emits no IR.
 5. Run `make monitor 0` at 115200 baud to see AP diagnostics and the per-device OTA password. Press reset to repeat the boot log.
 
+You can use the remote in a normal browser. While connected to the ESP32 AP, enter **`http://192.168.4.1/`** explicitly (including `http://`, since the ESP32 does not serve HTTPS). If it loads in the sign-in window but not in the browser, check that the phone stayed on `TV-Remote-XXXX` despite the no-internet warning; temporarily disable mobile data if it routes the browser elsewhere. The phone should receive a `192.168.4.x` address with gateway `192.168.4.1`. From your home WiFi, use the ESP32's station IP or `http://tv-remote.local/` after configuring that network in Settings; the AP address is only reachable from the AP network.
+
 The web assets and factory profiles are compiled into the firmware. No `uploadfs` step is required. On first boot the two factory profiles are copied to `/remotes/*.json` in LittleFS. Subsequent firmware uploads leave edited profiles intact. An explicit `uploadfs`, full erase or changed partition scheme may remove them; download each profile before those operations.
 
 ### Existing installations

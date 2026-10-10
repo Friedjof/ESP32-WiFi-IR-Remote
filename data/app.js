@@ -112,6 +112,8 @@ function activateTab(id) {
   document.querySelectorAll('.panel,.tab').forEach(element => element.classList.remove('active'));
   document.getElementById(id)?.classList.add('active');
   document.querySelector(`[data-tab="${id}"]`)?.classList.add('active');
+  document.body.classList.toggle('page-scroll', ['finder','codes','diagnostics'].includes(id));
+  window.scrollTo(0, 0);
 }
 
 function makeTab(id, label) {
