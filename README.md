@@ -2,11 +2,24 @@
 
 A fully local, browser-based universal IR remote for the Seeed Studio XIAO ESP32C3 and classic ESP32 DevKit. The default build targets a XIAO ESP32C3 with the IR transistor on **D10/GPIO10**. It creates an always-on, open WiFi access point and presents a phone-friendly remote through the captive portal or `http://192.168.4.1/`. It can also join a 2.4 GHz home WiFi network while keeping that access point on, making `http://tv-remote.local/` available where mDNS works.
 
-![Remote interface on a phone](docs/webinterface.png)
-
-![XIAO ESP32C3 and IR LED prototype](docs/hardware-esp-ir.jpg)
-
 The project ships with five **unverified Finder candidates** and two **uncoded templates**: a Toshiba 43UL2163DAY TV and a generic media player. Their button layouts are different. No candidate is claimed to work on the 43UL2163DAY until you test it. Use the Finder to test individual keys, or import a Flipper `.ir` file.
+
+<table>
+  <tr>
+    <td align="center"><img src="docs/webinterface.png" alt="Remote interface on a phone" height="280"></td>
+    <td align="center"><img src="docs/hardware-esp-ir.jpg" alt="XIAO ESP32C3 and IR LED prototype" height="280"></td>
+  </tr>
+  <tr>
+    <td align="center">Phone remote</td>
+    <td align="center">XIAO ESP32C3 transmitter prototype</td>
+  </tr>
+</table>
+
+## Prototype wiring
+
+The XIAO ESP32C3 sits on a breadboard with its external WiFi antenna attached. **D10/GPIO10** drives the base of a 2N2222 transistor through a 1 kΩ resistor. The emitter connects to ground; the collector switches the IR LED's cathode. The LED's anode connects to +5 V through a 100 Ω resistor. The ESP32 and 5 V supply need a common ground. The LED is not driven directly from the GPIO.
+
+These resistor values are a starting point; check the actual LED's forward voltage and permitted pulse current before powering the circuit. See [hardware and wiring](docs/hardware.md) for the wiring diagram, antenna notes and optional IR receiver.
 
 ## Features
 
