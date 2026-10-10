@@ -16,6 +16,8 @@ Open the remote at the home-WiFi address and select **Status → Live device log
 
 For a controlled TV test, tap one key briefly, wait about two seconds, and compare the TV's response with the new `Sent ...` event. Holding a repeatable key for more than 440 ms starts repeated HTTP requests. A `Sent` event confirms software transmission only; an IR receiver or oscilloscope is needed to inspect the emitted signal, and the TV response must still be observed directly.
 
+On the XIAO ESP32C3, the transmitter calibrates its software-generated carrier once at boot before WiFi starts. The device log records the measured microsecond offset. The 65 ms calibration burst contains no remote command. This compensates for the IR library's default ESP32 offset being measured on a different board; it does not measure the LED current or prove that the TV receives the signal. If short presses remain unreliable, compare the original remote and ESP output with a 38 kHz IR receiver or oscilloscope before changing the IR code or LED resistor.
+
 ## Update firmware over home WiFi
 
 The laptop and ESP32 must be on the same reachable local network. ArduinoOTA listens on port 3232 and requires the per-device password. In a Bash terminal, enter the password without placing it in shell history:

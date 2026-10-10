@@ -19,7 +19,17 @@ class DutyIrSend : public IRsend {
 class IrTransmitter {
  public:
   explicit IrTransmitter(DiagnosticLog& log) : log_(log), sender_(IR_TX_PIN) {}
-  void begin() { sender_.begin(); log_.add("ir", "Transmitter ready on GPIO%u", static_cast<unsigned>(IR_TX_PIN)); }
+  void begin() {
+    sender_.begin();
+#if defined(ARDUINO_XIAO_ESP32C3)
+    // The library's default ESP32 PWM offset was measured on a 240 MHz board.
+    // Calibrate the 160 MHz XIAO once before WiFi starts transmitting.
+    const int8_t offset = sender_.calibrate(IR_DEFAULT_FREQUENCY);
+    log_.add("ir", "Carrier calibrated at %lu Hz: %d us offset",
+             static_cast<unsigned long>(IR_DEFAULT_FREQUENCY), static_cast<int>(offset));
+#endif
+    log_.add("ir", "Transmitter ready on GPIO%u", static_cast<unsigned>(IR_TX_PIN));
+  }
   bool enqueue(const IrJob& job);
   void loop();
   uint8_t queued() const { return count_; }
