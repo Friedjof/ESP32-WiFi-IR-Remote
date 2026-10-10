@@ -1,0 +1,458 @@
+{
+  "id": "toshiba_tv",
+  "device": "Toshiba 43UL2163DAY",
+  "default_frequency": 38000,
+  "repeat_interval_ms": 250,
+  "receiver_enabled": false,
+  "pages": [
+    {
+      "id": "remote",
+      "label": "Remote",
+      "groups": [
+        {
+          "label": "MAIN",
+          "columns": 2,
+          "buttons": [
+            {
+              "command": "power",
+              "label": "Power",
+              "icon": "power",
+              "tone": "power"
+            },
+            {
+              "command": "input",
+              "label": "Input",
+              "icon": "input"
+            }
+          ]
+        },
+        {
+          "label": "SYSTEM",
+          "columns": 4,
+          "buttons": [
+            {
+              "command": "home",
+              "label": "Home",
+              "icon": "home"
+            },
+            {
+              "command": "back",
+              "label": "Back",
+              "icon": "back"
+            },
+            {
+              "command": "menu",
+              "label": "Menu",
+              "icon": "menu"
+            },
+            {
+              "command": "exit",
+              "label": "Exit",
+              "icon": "exit"
+            }
+          ]
+        },
+        {
+          "label": "VOLUME · CHANNEL",
+          "columns": 4,
+          "buttons": [
+            {
+              "command": "volume_down",
+              "label": "Vol −",
+              "icon": "minus",
+              "repeat": true
+            },
+            {
+              "command": "volume_up",
+              "label": "Vol +",
+              "icon": "plus",
+              "repeat": true
+            },
+            {
+              "command": "channel_down",
+              "label": "CH −",
+              "icon": "minus",
+              "repeat": true
+            },
+            {
+              "command": "channel_up",
+              "label": "CH +",
+              "icon": "plus",
+              "repeat": true
+            }
+          ]
+        },
+        {
+          "label": "NAVIGATION",
+          "columns": 3,
+          "buttons": [
+            {
+              "command": "up",
+              "label": "Up",
+              "icon": "up",
+              "column": 2,
+              "repeat": true,
+              "row": 1
+            },
+            {
+              "command": "left",
+              "label": "Left",
+              "icon": "left",
+              "repeat": true,
+              "row": 2,
+              "column": 1
+            },
+            {
+              "command": "ok",
+              "label": "OK",
+              "tone": "accent",
+              "row": 2,
+              "column": 2
+            },
+            {
+              "command": "right",
+              "label": "Right",
+              "icon": "right",
+              "repeat": true,
+              "row": 2,
+              "column": 3
+            },
+            {
+              "command": "down",
+              "label": "Down",
+              "icon": "down",
+              "column": 2,
+              "repeat": true,
+              "row": 3
+            }
+          ]
+        },
+        {
+          "label": "MEDIA",
+          "columns": 4,
+          "buttons": [
+            {
+              "command": "mute",
+              "label": "Mute",
+              "icon": "mute"
+            },
+            {
+              "command": "play",
+              "label": "Play",
+              "icon": "play"
+            },
+            {
+              "command": "pause",
+              "label": "Pause",
+              "icon": "pause"
+            },
+            {
+              "command": "stop",
+              "label": "Stop",
+              "icon": "stop"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "more",
+      "label": "More",
+      "groups": [
+        {
+          "label": "NUMBERS",
+          "columns": 3,
+          "buttons": [
+            {
+              "command": "digit_1",
+              "label": "1"
+            },
+            {
+              "command": "digit_2",
+              "label": "2"
+            },
+            {
+              "command": "digit_3",
+              "label": "3"
+            },
+            {
+              "command": "digit_4",
+              "label": "4"
+            },
+            {
+              "command": "digit_5",
+              "label": "5"
+            },
+            {
+              "command": "digit_6",
+              "label": "6"
+            },
+            {
+              "command": "digit_7",
+              "label": "7"
+            },
+            {
+              "command": "digit_8",
+              "label": "8"
+            },
+            {
+              "command": "digit_9",
+              "label": "9"
+            },
+            {
+              "command": "digit_0",
+              "label": "0"
+            }
+          ]
+        },
+        {
+          "label": "EXTRAS",
+          "columns": 3,
+          "buttons": [
+            {
+              "command": "favorite",
+              "label": "Favorite",
+              "icon": "star"
+            },
+            {
+              "command": "guide",
+              "label": "Guide"
+            },
+            {
+              "command": "info",
+              "label": "Info",
+              "icon": "info"
+            },
+            {
+              "command": "settings",
+              "label": "Settings",
+              "icon": "settings"
+            },
+            {
+              "command": "subtitle",
+              "label": "Subtitles"
+            }
+          ]
+        },
+        {
+          "label": "COLOURS",
+          "columns": 4,
+          "buttons": [
+            {
+              "command": "red",
+              "label": "Red",
+              "tone": "red"
+            },
+            {
+              "command": "green",
+              "label": "Green",
+              "tone": "green"
+            },
+            {
+              "command": "yellow",
+              "label": "Yellow",
+              "tone": "yellow"
+            },
+            {
+              "command": "blue",
+              "label": "Blue",
+              "tone": "blue"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "commands": {
+    "power": {
+      "protocol": "NEC",
+      "code": null,
+      "bits": 32
+    },
+    "volume_up": {
+      "protocol": "NEC",
+      "code": null,
+      "bits": 32
+    },
+    "volume_down": {
+      "protocol": "NEC",
+      "code": null,
+      "bits": 32
+    },
+    "mute": {
+      "protocol": "NEC",
+      "code": null,
+      "bits": 32
+    },
+    "up": {
+      "protocol": "NEC",
+      "code": null,
+      "bits": 32
+    },
+    "down": {
+      "protocol": "NEC",
+      "code": null,
+      "bits": 32
+    },
+    "left": {
+      "protocol": "NEC",
+      "code": null,
+      "bits": 32
+    },
+    "right": {
+      "protocol": "NEC",
+      "code": null,
+      "bits": 32
+    },
+    "ok": {
+      "protocol": "NEC",
+      "code": null,
+      "bits": 32
+    },
+    "home": {
+      "protocol": "NEC",
+      "code": null,
+      "bits": 32
+    },
+    "back": {
+      "protocol": "NEC",
+      "code": null,
+      "bits": 32
+    },
+    "menu": {
+      "protocol": "NEC",
+      "code": null,
+      "bits": 32
+    },
+    "exit": {
+      "protocol": "NEC",
+      "code": null,
+      "bits": 32
+    },
+    "play": {
+      "protocol": "NEC",
+      "code": null,
+      "bits": 32
+    },
+    "pause": {
+      "protocol": "NEC",
+      "code": null,
+      "bits": 32
+    },
+    "stop": {
+      "protocol": "NEC",
+      "code": null,
+      "bits": 32
+    },
+    "channel_up": {
+      "protocol": "NEC",
+      "code": null,
+      "bits": 32
+    },
+    "channel_down": {
+      "protocol": "NEC",
+      "code": null,
+      "bits": 32
+    },
+    "input": {
+      "protocol": "NEC",
+      "code": null,
+      "bits": 32
+    },
+    "guide": {
+      "protocol": "NEC",
+      "code": null,
+      "bits": 32
+    },
+    "info": {
+      "protocol": "NEC",
+      "code": null,
+      "bits": 32
+    },
+    "settings": {
+      "protocol": "NEC",
+      "code": null,
+      "bits": 32
+    },
+    "subtitle": {
+      "protocol": "NEC",
+      "code": null,
+      "bits": 32
+    },
+    "favorite": {
+      "protocol": "NEC",
+      "code": null,
+      "bits": 32
+    },
+    "red": {
+      "protocol": "NEC",
+      "code": null,
+      "bits": 32
+    },
+    "green": {
+      "protocol": "NEC",
+      "code": null,
+      "bits": 32
+    },
+    "yellow": {
+      "protocol": "NEC",
+      "code": null,
+      "bits": 32
+    },
+    "blue": {
+      "protocol": "NEC",
+      "code": null,
+      "bits": 32
+    },
+    "digit_0": {
+      "protocol": "NEC",
+      "code": null,
+      "bits": 32
+    },
+    "digit_1": {
+      "protocol": "NEC",
+      "code": null,
+      "bits": 32
+    },
+    "digit_2": {
+      "protocol": "NEC",
+      "code": null,
+      "bits": 32
+    },
+    "digit_3": {
+      "protocol": "NEC",
+      "code": null,
+      "bits": 32
+    },
+    "digit_4": {
+      "protocol": "NEC",
+      "code": null,
+      "bits": 32
+    },
+    "digit_5": {
+      "protocol": "NEC",
+      "code": null,
+      "bits": 32
+    },
+    "digit_6": {
+      "protocol": "NEC",
+      "code": null,
+      "bits": 32
+    },
+    "digit_7": {
+      "protocol": "NEC",
+      "code": null,
+      "bits": 32
+    },
+    "digit_8": {
+      "protocol": "NEC",
+      "code": null,
+      "bits": 32
+    },
+    "digit_9": {
+      "protocol": "NEC",
+      "code": null,
+      "bits": 32
+    }
+  }
+}

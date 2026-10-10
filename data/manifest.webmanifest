@@ -1,0 +1,18 @@
+{
+  "name": "IR Remote",
+  "short_name": "IR Remote",
+  "description": "Local ESP32 infrared remote control",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#101219",
+  "theme_color": "#101219",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#101219">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="mobile-web-app-capable" content="yes">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="icon" type="image/svg+xml" href="/icon.svg">
+  <title>IR Remote</title>
+  <link rel="stylesheet" href="/style.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <svg class="sprite" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <symbol id="power" viewBox="0 0 24 24"><path d="M12 2v9M5.6 5.7a9 9 0 1 0 12.8 0"/></symbol>
+    <symbol id="plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="minus" viewBox="0 0 24 24"><path d="M5 12h14"/></symbol>
+    <symbol id="mute" viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9H4m13 0 4 6m0-6-4 6"/></symbol>
+    <symbol id="up" viewBox="0 0 24 24"><path d="m5 15 7-7 7 7"/></symbol>
+    <symbol id="down" viewBox="0 0 24 24"><path d="m5 9 7 7 7-7"/></symbol>
+    <symbol id="left" viewBox="0 0 24 24"><path d="m15 5-7 7 7 7"/></symbol>
+    <symbol id="right" viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></symbol>
+    <symbol id="home" viewBox="0 0 24 24"><path d="m3 11 9-8 9 8v10h-6v-7H9v7H3z"/></symbol>
+    <symbol id="back" viewBox="0 0 24 24"><path d="M9 5 3 11l6 6M3 11h11a6 6 0 0 1 0 12"/></symbol>
+    <symbol id="menu" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></symbol>
+    <symbol id="exit" viewBox="0 0 24 24"><path d="M10 4H4v16h6m4-12 4 4-4 4m-6-4h10"/></symbol>
+    <symbol id="play" viewBox="0 0 24 24"><path d="m7 4 13 8-13 8z"/></symbol>
+    <symbol id="pause" viewBox="0 0 24 24"><path d="M6 4h4v16H6zM14 4h4v16h-4z"/></symbol>
+    <symbol id="stop" viewBox="0 0 24 24"><path d="M5 5h14v14H5z"/></symbol>
+    <symbol id="input" viewBox="0 0 24 24"><path d="M3 7h10v10H3zM13 12h8m-4-4 4 4-4 4"/></symbol>
+    <symbol id="star" viewBox="0 0 24 24"><path d="m12 2 3 6 7 .9-5 4.8 1.2 7L12 17.4 5.8 20.7l1.2-7-5-4.8L9 8z"/></symbol>
+    <symbol id="info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-10v1"/></symbol>
+    <symbol id="settings" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="m9 2-.5 2.2-2 1.2-2.2-.7-2 3.5 1.8 1.5v2.4l-1.8 1.5 2 3.5 2.2-.7 2 1.2L9 20h6l.5-2.2 2-1.2 2.2.7 2-3.5-1.8-1.5V9.9l1.8-1.5-2-3.5-2.2.7-2-1.2L15 2z"/></symbol>
+  </svg>
+  <main class="app">
+    <header class="topbar">
+      <div><p class="eyebrow">LOCAL CONTROL</p><h1>IR Remote</h1><p id="target" class="subtitle">Connecting…</p></div>
+      <div id="connection" class="connection offline"><span class="dot"></span><span id="connection-text">Connecting</span></div>
+    </header>
+    <div class="profile-bar"><label for="profile-select">REMOTE</label><select id="profile-select" aria-label="Select remote"></select></div>
+    <div id="notice" class="notice" role="status" aria-live="polite" hidden></div>
+    <div id="dynamic-pages" class="dynamic-pages"></div>
+    <section id="codes" class="panel" aria-label="Remote profiles and IR codes">
+      <div class="card"><h2>Remote profiles</h2><p>Each remote has its own saved JSON file. Select a remote above to use it. Clone the current layout to make a new remote with empty IR codes.</p>
+        <label for="new-name">New remote name</label><input id="new-name" maxlength="80" placeholder="e.g. Living room receiver">
+        <div class="toolbar"><button id="create-profile" class="primary" type="button">Clone layout</button><button id="delete-profile" class="danger" type="button">Delete selected remote</button></div>
+      </div>
+      <div class="card"><h2>Layout and codes</h2><p>Edit pages, groups and buttons in this profile's JSON. A button's <code>command</code> must exist in <code>commands</code>. No device codes are preloaded. Download a backup before erasing flash.</p>
+        <div class="toolbar"><button id="download" type="button">Download profile</button><label class="file-button">Import profile<input id="import-file" type="file" accept="application/json,.json"></label></div>
+        <label for="config-editor">Selected profile JSON</label><textarea id="config-editor" spellcheck="false" rows="18"></textarea>
+        <div class="toolbar"><button id="save-config" class="primary" type="button">Save profile</button><button id="reload-config" type="button">Reload</button></div>
+      </div>
+      <div class="card"><h2>Learn from original remote</h2><p>Connect a 3.3 V IR receiver and enable it in firmware and this profile. The XIAO build ships with receive support disabled.</p>
+        <label for="learn-command">Command</label><select id="learn-command"></select>
+        <div class="toolbar"><button id="start-learn" type="button">Learn IR code</button><button id="save-learn" class="primary" type="button" disabled>Save captured code</button></div>
+        <pre id="learn-result" class="result">Waiting to start.</pre>
+      </div>
+    </section>
+    <section id="diagnostics" class="panel" aria-label="Diagnostics"><div class="card"><h2>Device status</h2><pre id="status-json" class="result">Connecting…</pre><div class="toolbar"><button id="refresh-status" type="button">Refresh</button><button id="restart" class="danger" type="button">Restart ESP32</button></div></div></section>
+    <nav id="tabs" class="tabs" aria-label="Sections"></nav>
+  </main>
+</body>
+</html>
