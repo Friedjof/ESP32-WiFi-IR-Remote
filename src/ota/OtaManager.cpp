@@ -1,10 +1,9 @@
 #include "OtaManager.h"
 #include "Config.h"
 
-void OtaManager::begin(const String& password) {
+void OtaManager::begin() {
   ArduinoOTA.setHostname(DEVICE_HOSTNAME);
   ArduinoOTA.setMdnsEnabled(false); // NetworkManager owns the mDNS responder.
-  ArduinoOTA.setPassword(password.c_str());
   ArduinoOTA.setRebootOnSuccess(false);
   ArduinoOTA.onStart([this]() {
     Serial.println("OTA update started");
@@ -20,7 +19,7 @@ void OtaManager::begin(const String& password) {
     log_.add("ota", "Firmware update failed (error %u)", static_cast<unsigned>(error));
   });
   ArduinoOTA.begin();
-  log_.add("ota", "Password-protected OTA ready on port 3232");
+  log_.add("ota", "OTA ready without a password on port 3232");
 }
 
 void OtaManager::loop() {

@@ -175,7 +175,7 @@ void RemoteWebServer::status() {
   doc["free_heap"] = ESP.getFreeHeap();
   doc["ota"]["enabled"] = true;
   doc["ota"]["port"] = 3232;
-  doc["ota"]["password_protected"] = true;
+  doc["ota"]["password_protected"] = false;
   sendJson(200, doc);
 }
 

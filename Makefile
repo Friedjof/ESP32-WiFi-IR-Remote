@@ -46,8 +46,7 @@ flash: build
 	$(PLATFORMIO) run --target upload --environment $(BOARD) $(UPLOAD_FLAG)
 
 ota: web-headers profile-headers candidate-header
-	@test -n "$$OTA_PASSWORD" || { echo "Set OTA_PASSWORD in the environment before running make ota"; exit 1; }
-	@PLATFORMIO_UPLOAD_FLAGS="--auth=$$OTA_PASSWORD" $(PLATFORMIO) run --target upload --environment esp32c3_ota --upload-port "$(OTA_HOST)"
+	$(PLATFORMIO) run --target upload --environment esp32c3_ota --upload-port "$(OTA_HOST)"
 
 monitor:
 	$(PLATFORMIO) device monitor --environment $(BOARD) $(MONITOR_FLAG)

@@ -32,7 +32,7 @@ void setup() {
   receiver.setEnabled(config.receiverEnabled());
   network.begin();
   web.begin();
-  ota.begin(network.otaPassword());
+  ota.begin();
 }
 
 void loop() {

@@ -2,14 +2,14 @@
 
 The local API is available at `http://192.168.4.1` on the always-on open `TV-Remote-XXXX` AP, and at `http://tv-remote.local` or the station IP when home WiFi is configured. The ESP32 makes no cloud requests or automatic router port mappings. All API success and error bodies are JSON, except the downloadable JSON export. Requests must originate in the AP subnet or the ESP32's home-WiFi subnet.
 
-State-changing routes are open by default to match the open AP setup. **Settings** or `PUT /api/security` can set an optional 8–64 character administrator password. Once set, all non-GET requests use HTTP Basic authentication with user `admin`. ArduinoOTA uses a separate random password printed on serial. Neither password nor WiFi credentials appear in `GET` responses.
+State-changing routes are open by default to match the open AP setup. **Settings** or `PUT /api/security` can set an optional 8–64 character administrator password. Once set, all non-GET requests use HTTP Basic authentication with user `admin`. ArduinoOTA currently has no password and is separate from HTTP authentication. Passwords and WiFi credentials do not appear in `GET` responses.
 
 ## Endpoints
 
 | Method | Path | Purpose |
 |---|---|---|
 | GET | `/api/status` | Firmware, active profile, AP/STA connection, IR queue, RX, uptime, heap |
-| GET | `/api/logs` | Last 48 RAM-only WiFi, IR and OTA events, oldest first; no credentials or OTA password |
+| GET | `/api/logs` | Last 48 RAM-only WiFi, IR and OTA events, oldest first; no credentials |
 | GET / PUT | `/api/network` | Read AP/STA state; set `{ "ssid": "...", "password": "..." }` for 2.4 GHz home WiFi; empty SSID and password forget it |
 | GET / PUT | `/api/security` | Read `admin_password_set`; set `{ "password": "..." }`, empty password removes authentication |
 | GET | `/api/candidates` | Curated Finder catalog plus saved per-command Yes/No feedback |
@@ -65,7 +65,7 @@ Accepted command response:
 
 Unknown commands return `404`; known but unconfigured commands return `409`; invalid import/test data returns `400`; more than one accepted IR command in 120 ms returns `429`; a full four-item queue returns `503`. Error bodies have `{"success":false,"error":"..."}`. IR transmission is serial, never overlapping. Finder tests allow only manually selected volume, mute, navigation, home/back, input, channel, menu and exit commands. No automatic scan exists.
 
-`GET /api/logs` returns `{ "uptime_ms": ..., "capacity": 48, "events": [...] }`. Each event has an incrementing `id`, `uptime_ms`, `category` and `message`. IR events include the command name, protocol, encoded value, bit count, carrier and elapsed transmission time. The history is held in RAM and clears on reboot. It records what the ESP32 sent, not what the TV received. `/api/status` also reports the home-WiFi IP and the password-protected OTA port (3232). See [Remote diagnosis and OTA](remote-diagnostics.md).
+`GET /api/logs` returns `{ "uptime_ms": ..., "capacity": 48, "events": [...] }`. Each event has an incrementing `id`, `uptime_ms`, `category` and `message`. IR events include the command name, protocol, encoded value, bit count, carrier and elapsed transmission time. The history is held in RAM and clears on reboot. It records what the ESP32 sent, not what the TV received. `/api/status` also reports the home-WiFi IP and OTA port (3232) with `password_protected: false`. See [Remote diagnosis and OTA](remote-diagnostics.md).
 
 ## Profiles and persistence
 

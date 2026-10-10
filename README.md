@@ -32,7 +32,7 @@ These resistor values are a starting point; check the actual LED's forward volta
 - REST API restricted to local AP or home-WiFi clients, optional HTTP Basic admin password for changes, a four-command IR queue and rate limiting.
 - NEC, Samsung32, Sony, RC5, RC6 and RAW send modes, with carrier frequency per command or profile.
 - Optional IR receiver and browser-assisted learning, including RAW fallback (disabled in the default XIAO build).
-- Atomic profile saves with `.bak` fallback, password-protected local ArduinoOTA, and live WiFi/IR/OTA diagnostics in the browser. On the XIAO ESP32C3, 32-bit NEC signals use the hardware RMT transmitter to keep their carrier and pulse timing stable during WiFi activity.
+- Atomic profile saves with `.bak` fallback, local ArduinoOTA, and live WiFi/IR/OTA diagnostics in the browser. On the XIAO ESP32C3, 32-bit NEC signals use the hardware RMT transmitter to keep their carrier and pulse timing stable during WiFi activity.
 
 ## Build and connect
 
@@ -40,9 +40,9 @@ These resistor values are a starting point; check the actual LED's forward volta
 2. Run `make build` to generate the embedded gzip assets and factory profile header, then compile. Run `make flash 0` for `/dev/ttyACM0`, or `make flash PORT=/dev/serial/by-id/...` for a stable path. `make run 0` also opens the serial monitor. The Makefile workflow follows [AutomaticChickenFeeder](https://github.com/Friedjof/AutomaticChickenFeeder).
 3. Connect your phone to the open `TV-Remote-XXXX` WiFi network. Its suffix comes from the board's MAC address, so a different board has a different SSID. The sign-in window should open the remote automatically. Otherwise visit `http://192.168.4.1/`. If the phone says the network has no internet, choose to stay connected.
 4. Select a bundled Samsung, LG or Sony remote at the top to try its sourced codes. The default Toshiba template has no IR codes: use **Finder** to test candidates one key at a time and save Yes/No results. A working key can be copied into the active remote with **Use tested key in remote**; two working keys also allow a candidate to become a separate remote. The Toshiba CT-8560 source has no Menu signal, so Finder offers separate, unverified Menu candidates rather than inventing one. **Settings** lets you import a Flipper `.ir` file, edit/export profiles and optionally join home WiFi. New Flipper imports arrange familiar button names into a remote layout; existing imports can use **Arrange imported buttons** in Settings. An unconfigured command emits no IR.
-5. Run `make monitor 0` at 115200 baud to see AP diagnostics and the per-device OTA password. Press reset to repeat the boot log.
+5. Run `make monitor 0` at 115200 baud to see AP and OTA diagnostics. Press reset to repeat the boot log.
 
-To use the remote while the XIAO is powered near the TV, join it to your 2.4 GHz home WiFi in **Settings** before unplugging USB. Confirm the home-network IP in **Status**, save the OTA password from the serial monitor, then open `http://tv-remote.local/` or that IP from your phone. **Status → Live device log** shows sent IR values and connection events. For firmware updates from a laptop, run `make ota OTA_HOST=STATION_IP` with `OTA_PASSWORD` set in the environment; see [remote diagnosis and OTA](docs/remote-diagnostics.md) for the password-safe terminal commands and the AP fallback.
+To use the remote while the XIAO is powered near the TV, join it to your 2.4 GHz home WiFi in **Settings** before unplugging USB. Confirm the home-network IP in **Status**, then open `http://tv-remote.local/` or that IP from your phone. **Status → Live device log** shows sent IR values and connection events. For firmware updates from a laptop, run `make ota OTA_HOST=STATION_IP`; see [remote diagnosis and OTA](docs/remote-diagnostics.md) for the AP fallback.
 
 You can use the remote in a normal browser. While connected to the ESP32 AP, enter **`http://192.168.4.1/`** explicitly (including `http://`, since the ESP32 does not serve HTTPS). If it loads in the sign-in window but not in the browser, check that the phone stayed on `TV-Remote-XXXX` despite the no-internet warning; temporarily disable mobile data if it routes the browser elsewhere. The phone should receive a `192.168.4.x` address with gateway `192.168.4.1`. From your home WiFi, use the ESP32's station IP or `http://tv-remote.local/` after configuring that network in Settings; the AP address is only reachable from the AP network.
 
@@ -90,7 +90,7 @@ Encoded protocols require a hexadecimal `code` string and 1–64 `bits`. RAW com
 
 The XIAO's D10/GPIO10 drives the IR LED through a transistor; never drive a high-current IR LED directly from the GPIO. See [hardware.md](docs/hardware.md) for wiring and receiver options. The classic `esp32dev` environment uses GPIO18 for transmit and GPIO27 for optional receive.
 
-The AP remains active when home WiFi is configured. Anyone who joins this open WiFi can use the remote; set an optional admin password in **Settings** to protect state-changing API calls. WiFi credentials and the admin password are stored in device NVS, never in this repository. ArduinoOTA has a separate per-device password in NVS. The firmware makes no cloud or telemetry requests.
+The AP remains active when home WiFi is configured. Anyone who joins this open WiFi can use the remote; set an optional admin password in **Settings** to protect state-changing HTTP API calls. OTA currently has no password, so any device that can reach port 3232 on the AP or home network can upload firmware. WiFi credentials and the admin password are stored in device NVS, never in this repository. The firmware makes no cloud or telemetry requests.
 
 ## Documentation
 

@@ -14,7 +14,6 @@ class NetworkManager {
   void loop();
   bool apActive() const { return apActive_; }
   const String& apName() const { return apName_; }
-  const String& otaPassword() const { return otaPassword_; }
   bool stationConfigured() const { return !stationSsid_.isEmpty(); }
   bool stationConnected() const { return WiFi.status() == WL_CONNECTED; }
   const String& stationSsid() const { return stationSsid_; }
@@ -26,7 +25,6 @@ class NetworkManager {
   DiagnosticLog& log_;
   Preferences prefs_;
   DNSServer dns_;
-  String otaPassword_;
   String apName_;
   String stationSsid_;
   String stationPassword_;
@@ -37,7 +35,6 @@ class NetworkManager {
   bool stationWasConnected_ = false;
   uint32_t lastStartAttempt_ = 0;
   uint32_t lastStationAttempt_ = 0;
-  String secret(const char* key, size_t length);
   void printInfo();
   bool startAp();
   void connectStation();

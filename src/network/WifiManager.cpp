@@ -1,20 +1,10 @@
 #include "WifiManager.h"
 #include <esp_wifi.h>
 
-String NetworkManager::secret(const char* key, size_t length) {
-  String value = prefs_.getString(key, "");
-  if (value.length() == length) return value;
-  const char alphabet[] = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789";
-  value.reserve(length);
-  for (size_t i = 0; i < length; ++i) value += alphabet[esp_random() % (sizeof(alphabet) - 1)];
-  prefs_.putString(key, value);
-  return value;
-}
-
 void NetworkManager::printInfo() {
   Serial.printf("Open WiFi AP: %s\n", apName_.c_str());
   Serial.printf("Remote URL: http://%s/\n", WiFi.softAPIP().toString().c_str());
-  Serial.printf("OTA password: %s\n", otaPassword_.c_str());
+  Serial.println("OTA: port 3232, no password");
   if (stationConnected()) Serial.printf("Home WiFi: %s, IP: %s, http://%s.local/\n",
                                       stationSsid_.c_str(), WiFi.localIP().toString().c_str(), DEVICE_HOSTNAME);
   else if (stationConfigured()) Serial.printf("Home WiFi: connecting to %s\n", stationSsid_.c_str());
@@ -58,7 +48,7 @@ bool NetworkManager::startAp() {
   mdnsStarted_ = MDNS.begin(DEVICE_HOSTNAME);
   if (mdnsStarted_) {
     MDNS.addService("http", "tcp", 80);
-    MDNS.enableArduino(3232, true);
+    MDNS.enableArduino(3232, false);
   }
   Serial.printf("Captive DNS ready; mDNS: %s\n", mdnsStarted_ ? "ready" : "unavailable");
   log_.add("wifi", "Access point ready at %s", WiFi.softAPIP().toString().c_str());
@@ -68,7 +58,6 @@ bool NetworkManager::startAp() {
 
 void NetworkManager::begin() {
   prefs_.begin("tvremote", false);
-  otaPassword_ = secret("ota", 20);
   stationSsid_ = prefs_.getString("sta_ssid", "");
   stationPassword_ = prefs_.getString("sta_pass", "");
   adminPassword_ = prefs_.getString("admin", "");

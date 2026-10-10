@@ -260,7 +260,7 @@ async function loadStatus() {
     const data = await api('/api/status');
     $('#status-json').textContent = JSON.stringify(data, null, 2);
     $('#lan-access').textContent = data.wifi.station_connected ?
-      `Home WiFi: http://${data.wifi.station_ip}/ · OTA port ${data.ota?.port || 3232}. The TV-Remote AP remains available.` :
+      `Home WiFi: http://${data.wifi.station_ip}/ · OTA port ${data.ota?.port || 3232} (${data.ota?.password_protected ? 'password required' : 'no password'}). The TV-Remote AP remains available.` :
       'Home WiFi is disconnected. Connect it in Settings before moving the ESP32; the TV-Remote AP stays available.';
     $('#connection').classList.toggle('online', data.wifi.connected);
     $('#connection-text').textContent = data.wifi.connected ? 'Connected' : 'WiFi offline';

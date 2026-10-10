@@ -6,7 +6,7 @@
 class OtaManager {
  public:
   explicit OtaManager(DiagnosticLog& log) : log_(log) {}
-  void begin(const String& password);
+  void begin();
   void loop();
 
  private:
