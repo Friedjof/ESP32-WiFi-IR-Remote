@@ -1,4 +1,5 @@
 #include "IrTransmitter.h"
+#include "NecRmtSender.h"
 #include <ir_NEC.h>
 
 namespace {
@@ -29,8 +30,23 @@ void IrTransmitter::loop() {
   IrJob& job = queue_[head_];
   Serial.printf("IR sending %s\n", job.name);
   uint32_t start = millis();
+  bool usedRmt = false;
+  bool sendFailed = false;
   switch (job.protocol) {
     case IrProtocol::Nec:
+#if defined(ARDUINO_XIAO_ESP32C3)
+      {
+        const NecRmtResult result = sendNecRmt(job.code, job.bits, job.frequency, log_);
+        if (result == NecRmtResult::Sent) {
+          usedRmt = true;
+          break;
+        }
+        if (result == NecRmtResult::Failed) {
+          sendFailed = true;
+          break;
+        }
+      }
+#endif
       if (job.frequency == 38000) sender_.sendNEC(job.code, job.bits);
       else sender_.sendGeneric(kNecHdrMark, kNecHdrSpace, kNecBitMark, kNecOneSpace,
                                kNecBitMark, kNecZeroSpace, kNecBitMark, kNecMinGap,
@@ -59,15 +75,20 @@ void IrTransmitter::loop() {
       break;
     case IrProtocol::Raw: sender_.sendRawWithDuty(job.timings, job.length, job.frequency, job.dutyCycle); break;
   }
-  if (job.protocol == IrProtocol::Raw)
+  if (sendFailed)
+    log_.add("ir", "Failed %s %s 0x%llX/%u via RMT", job.name,
+             protocolName(job.protocol), static_cast<unsigned long long>(job.code),
+             static_cast<unsigned>(job.bits));
+  else if (job.protocol == IrProtocol::Raw)
     log_.add("ir", "Sent %s RAW %u timings %lu Hz in %lu ms", job.name,
              static_cast<unsigned>(job.length), static_cast<unsigned long>(job.frequency),
              static_cast<unsigned long>(millis() - start));
   else
-    log_.add("ir", "Sent %s %s 0x%llX/%u %lu Hz %s in %lu ms", job.name,
+    log_.add("ir", "Sent %s %s 0x%llX/%u %lu Hz %s via %s in %lu ms", job.name,
              protocolName(job.protocol), static_cast<unsigned long long>(job.code),
              static_cast<unsigned>(job.bits),
              static_cast<unsigned long>(job.frequency), job.held ? "held" : "tap",
+             usedRmt ? "RMT" : "software",
              static_cast<unsigned long>(millis() - start));
   head_ = (head_ + 1) % IR_QUEUE_SIZE;
   --count_;

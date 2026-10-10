@@ -32,7 +32,7 @@ These resistor values are a starting point; check the actual LED's forward volta
 - REST API restricted to local AP or home-WiFi clients, optional HTTP Basic admin password for changes, a four-command IR queue and rate limiting.
 - NEC, Samsung32, Sony, RC5, RC6 and RAW send modes, with carrier frequency per command or profile.
 - Optional IR receiver and browser-assisted learning, including RAW fallback (disabled in the default XIAO build).
-- Atomic profile saves with `.bak` fallback, password-protected local ArduinoOTA, and live WiFi/IR/OTA diagnostics in the browser.
+- Atomic profile saves with `.bak` fallback, password-protected local ArduinoOTA, and live WiFi/IR/OTA diagnostics in the browser. On the XIAO ESP32C3, 32-bit NEC signals use the hardware RMT transmitter to keep their carrier and pulse timing stable during WiFi activity.
 
 ## Build and connect
 
