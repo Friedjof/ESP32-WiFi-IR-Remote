@@ -15,11 +15,14 @@ void NetworkManager::printInfo() {
   Serial.printf("Open WiFi AP: %s\n", apName_.c_str());
   Serial.printf("Remote URL: http://%s/\n", WiFi.softAPIP().toString().c_str());
   Serial.printf("OTA password: %s\n", otaPassword_.c_str());
+  if (stationConnected()) Serial.printf("Home WiFi: %s, IP: %s, http://%s.local/\n",
+                                      stationSsid_.c_str(), WiFi.localIP().toString().c_str(), DEVICE_HOSTNAME);
+  else if (stationConfigured()) Serial.printf("Home WiFi: connecting to %s\n", stationSsid_.c_str());
 }
 
 bool NetworkManager::startAp() {
   lastStartAttempt_ = millis();
-  WiFi.mode(WIFI_AP);
+  WiFi.mode(stationConfigured() ? WIFI_AP_STA : WIFI_AP);
   WiFi.setSleep(false);
   WiFi.setTxPower(WIFI_POWER_19_5dBm);
   const IPAddress ip(192, 168, 4, 1);
@@ -64,6 +67,9 @@ bool NetworkManager::startAp() {
 void NetworkManager::begin() {
   prefs_.begin("tvremote", false);
   otaPassword_ = secret("ota", 20);
+  stationSsid_ = prefs_.getString("sta_ssid", "");
+  stationPassword_ = prefs_.getString("sta_pass", "");
+  adminPassword_ = prefs_.getString("admin", "");
   apName_ = "TV-Remote-" + String(static_cast<uint32_t>(ESP.getEfuseMac() & 0xffff), HEX);
   serialWasConnected_ = static_cast<bool>(Serial);
   WiFi.onEvent([](WiFiEvent_t event, WiFiEventInfo_t) {
@@ -71,8 +77,54 @@ void NetworkManager::begin() {
     if (event == ARDUINO_EVENT_WIFI_AP_STOP) Serial.println("WiFi event: AP stopped");
     if (event == ARDUINO_EVENT_WIFI_AP_STACONNECTED) Serial.println("WiFi event: client connected");
     if (event == ARDUINO_EVENT_WIFI_AP_STADISCONNECTED) Serial.println("WiFi event: client disconnected");
+    if (event == ARDUINO_EVENT_WIFI_STA_GOT_IP) Serial.printf("Home WiFi IP: %s\n", WiFi.localIP().toString().c_str());
+    if (event == ARDUINO_EVENT_WIFI_STA_DISCONNECTED) Serial.println("Home WiFi disconnected");
   });
   startAp();
+  connectStation();
+}
+
+void NetworkManager::connectStation() {
+  if (!stationConfigured()) return;
+  lastStationAttempt_ = millis();
+  WiFi.setHostname(DEVICE_HOSTNAME);
+  WiFi.setAutoReconnect(true);
+  WiFi.begin(stationSsid_.c_str(), stationPassword_.c_str());
+  Serial.printf("Connecting to home WiFi: %s\n", stationSsid_.c_str());
+}
+
+bool NetworkManager::configureStation(const String& ssid, const String& password, String& error) {
+  if (ssid.length() > 32 || password.length() > 63 ||
+      (!ssid.isEmpty() && password.length() && password.length() < 8)) {
+    error = "SSID or WPA2 password length is invalid"; return false;
+  }
+  if (ssid.isEmpty()) {
+    stationSsid_ = stationPassword_ = "";
+    prefs_.remove("sta_ssid"); prefs_.remove("sta_pass");
+    WiFi.disconnect(false, false);
+    WiFi.mode(WIFI_AP);
+    return true;
+  }
+  if (password.isEmpty() && ssid == stationSsid_) {
+    error = "Enter a password to update this network"; return false;
+  }
+  stationSsid_ = ssid;
+  stationPassword_ = password;
+  prefs_.putString("sta_ssid", stationSsid_);
+  prefs_.putString("sta_pass", stationPassword_);
+  WiFi.mode(WIFI_AP_STA);
+  connectStation();
+  return true;
+}
+
+bool NetworkManager::configureAdmin(const String& password, String& error) {
+  if (!password.isEmpty() && (password.length() < 8 || password.length() > 64)) {
+    error = "Admin password must be 8..64 characters"; return false;
+  }
+  adminPassword_ = password;
+  if (password.isEmpty()) prefs_.remove("admin");
+  else prefs_.putString("admin", password);
+  return true;
 }
 
 void NetworkManager::loop() {
@@ -84,4 +136,6 @@ void NetworkManager::loop() {
   } else if (millis() - lastStartAttempt_ >= 10000) {
     startAp();
   }
+  if (stationConfigured() && !stationConnected() && millis() - lastStationAttempt_ >= 15000)
+    connectStation();
 }

@@ -17,6 +17,8 @@ class ConfigStorage {
   void list(JsonDocument& output) const;
   const String& activeId() const { return activeId_; }
   bool makeJob(const String& name, IrJob& job, String& error) const;
+  static bool makeJobFrom(JsonVariantConst command, uint32_t defaultFrequency,
+                          const String& name, IrJob& job, String& error);
   bool hasCommand(const String& name) const;
   bool isConfigured(const String& name) const;
   uint32_t repeatInterval() const;

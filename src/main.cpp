@@ -5,13 +5,15 @@
 #include "ir/IrTransmitter.h"
 #include "ir/IrReceiver.h"
 #include "ota/OtaManager.h"
+#include "finder/CandidateCatalog.h"
 
 ConfigStorage config;
+CandidateCatalog candidates;
 NetworkManager network;
 IrTransmitter transmitter;
 IrReceiver receiver;
 OtaManager ota;
-RemoteWebServer web(config, network, transmitter, receiver);
+RemoteWebServer web(config, candidates, network, transmitter, receiver);
 
 void setup() {
   Serial.begin(115200);
@@ -22,6 +24,7 @@ void setup() {
   delay(250);
   Serial.printf("ESP32 IR Remote %s\n", FIRMWARE_VERSION);
   if (!config.begin()) Serial.println("ERROR: LittleFS initialization failed");
+  if (!candidates.begin()) Serial.println("ERROR: Candidate catalog unavailable");
   transmitter.begin();
   receiver.begin();
   receiver.setEnabled(config.receiverEnabled());

@@ -1,61 +1,72 @@
 # HTTP API
 
-Connect to the open `TV-Remote-XXXX` WiFi network first. Base URL: `http://192.168.4.1` (or `http://tv-remote.local` where mDNS resolves). The captive sign-in page opens the remote automatically on supported phones. All API responses are JSON. Requests from outside the AP subnet receive `403`.
+The local API is available at `http://192.168.4.1` on the always-on open `TV-Remote-XXXX` AP, and at `http://tv-remote.local` or the station IP when home WiFi is configured. The ESP32 makes no cloud requests or automatic router port mappings. All API success and error bodies are JSON, except the downloadable JSON export. Requests must originate in the AP subnet or the ESP32's home-WiFi subnet.
+
+State-changing routes are open by default to match the open AP setup. **Settings** or `PUT /api/security` can set an optional 8–64 character administrator password. Once set, all non-GET requests use HTTP Basic authentication with user `admin`. ArduinoOTA uses a separate random password printed on serial. Neither password nor WiFi credentials appear in `GET` responses.
+
+## Endpoints
 
 | Method | Path | Purpose |
 |---|---|---|
-| GET | `/api/status` | Firmware, active remote ID, WiFi, IR, receiver, uptime and heap |
-| GET | `/api/remotes` | List stored profiles and the active ID |
-| POST | `/api/remotes` | Validate, create and activate a new profile from a complete JSON object |
-| POST | `/api/remotes/active` | Select a profile with body `{"id":"media_player"}` |
+| GET | `/api/status` | Firmware, active profile, AP/STA connection, IR queue, RX, uptime, heap |
+| GET / PUT | `/api/network` | Read AP/STA state; set `{ "ssid": "...", "password": "..." }` for 2.4 GHz home WiFi; empty SSID and password forget it |
+| GET / PUT | `/api/security` | Read `admin_password_set`; set `{ "password": "..." }`, empty password removes authentication |
+| GET | `/api/candidates` | Curated Finder catalog plus saved per-command Yes/No feedback |
+| POST | `/api/candidates/{id}/test` | Queue exactly one safe command using `{ "command": "volume_up" }` |
+| POST | `/api/candidates/{id}/feedback` | Save `{ "command": "volume_up", "worked": true }` |
+| DELETE | `/api/candidates/{id}/feedback` | Clear all saved test feedback for one candidate |
+| POST | `/api/candidates/{id}/activate` | Create/select an editable remote from a candidate after two different positive results |
+| POST | `/api/import/flipper` | Import `{ "id": "my_remote", "device": "My Remote", "content": "Filetype: IR signals file\\n..." }` |
+| GET / POST | `/api/remotes` | List saved profiles / create and activate a complete JSON profile |
+| POST | `/api/remotes/active` | Select with `{ "id": "toshiba_tv" }` |
 | DELETE | `/api/remotes/{id}` | Delete a profile; at least one must remain |
-| GET | `/api/commands` | Commands in the active profile, protocol, configured state and repeat interval |
-| POST | `/api/commands/{name}/send` | Queue one IR transmission from the active profile |
-| GET | `/api/config` | Read the active profile's complete JSON |
-| PUT | `/api/config` | Validate and replace the active profile; its ID cannot change |
-| GET | `/api/config/export` | Download the active profile as JSON |
-| POST | `/api/config/import` | Replace the active profile from JSON with the same ID |
-| POST | `/api/learn/start` | Start a 20-second capture window for an active-profile command |
-| GET | `/api/learn/status` | Read capture state and candidate code |
-| POST | `/api/learn/commit` | Save the captured code in the active profile |
+| GET | `/api/commands` | Active profile commands, protocol, configured state and hold interval |
+| POST | `/api/commands/{name}/send` | Queue one active-profile IR command. Optional `X-IR-Held: 1` preserves RC5/RC6 toggle for held repeats. |
+| GET / PUT | `/api/config` | Read / validate and replace the active profile; its ID cannot change |
+| GET | `/api/config/export` | Download the active profile JSON |
+| POST | `/api/config/import` | Replace the active profile with JSON having the same ID |
+| POST | `/api/learn/start` | Start a 20-second capture window with `{ "command": "power" }` |
+| GET | `/api/learn/status` | Capture state and candidate signal |
+| POST | `/api/learn/commit` | Persist the captured signal in the active profile |
 | POST | `/api/restart` | Schedule a restart |
 
-List profiles and switch:
+Example manual Finder test:
 
 ```sh
-curl http://192.168.4.1/api/remotes
-curl -H 'Content-Type: application/json' -d '{"id":"media_player"}' \
-  http://192.168.4.1/api/remotes/active
+curl http://192.168.4.1/api/candidates
+curl -H 'Content-Type: application/json' \
+  -d '{"command":"volume_up"}' \
+  http://192.168.4.1/api/candidates/toshiba_ct8563/test
 ```
 
-Send a configured command:
+The test response is `202` and reports queue acceptance; it cannot confirm that the TV reacted. Record the result only after observing the TV:
+
+```sh
+curl -H 'Content-Type: application/json' \
+  -d '{"command":"volume_up","worked":true}' \
+  http://192.168.4.1/api/candidates/toshiba_ct8563/feedback
+```
+
+After two different successful keys, `POST /api/candidates/toshiba_ct8563/activate` creates and activates a saved Toshiba-layout remote. Its `origin` records the source and confirmed command names. Full compatibility remains unverified. The normal remote then uses this active profile:
 
 ```sh
 curl -X POST http://192.168.4.1/api/commands/volume_up/send
 ```
 
-Accepted response, HTTP `202`:
+Accepted command response:
 
 ```json
 {"success":true,"command":"volume_up","queued":true}
 ```
 
-This acknowledges queueing, not confirmation that the device received the signal. Unknown commands return `404`; known but unconfigured commands return `409`; requests faster than 120 ms return `429`; a full queue returns `503`. Error responses have `{"success":false,"error":"..."}`. The transmitter processes one queued item at a time with a four-command queue.
+Unknown commands return `404`; known but unconfigured commands return `409`; invalid import/test data returns `400`; more than one accepted IR command in 120 ms returns `429`; a full four-item queue returns `503`. Error bodies have `{"success":false,"error":"..."}`. IR transmission is serial, never overlapping. Finder tests allow only manually selected volume, mute, navigation, home/back, input, channel, menu and exit commands. No automatic scan exists.
 
-Each profile is one JSON file in `/remotes/{id}.json` on LittleFS. `id` uses lowercase letters, numbers and underscores (up to 32 characters). Required fields: `id`, `device`, `default_frequency`, `repeat_interval_ms`, `receiver_enabled`, `pages`, and `commands`. Every page has `id`, `label` and `groups`; every group has `label`, `columns` (1–4), and `buttons`. Every button has a valid `command` and `label`. Optional button fields: `icon`, `tone`, `repeat`, `span`, `column`, `row`. The command must exist in `commands`. A profile may have 1–6 pages, up to 12 groups per page, up to 96 commands and 96 visible buttons. The device stores up to eight profiles.
+## Profiles and persistence
 
-Supported IR protocols: `NEC`, `SONY`, `RC5`, `RC6`, `RAW`. For encoded protocols, `code` is a hexadecimal string (`0x` prefix optional) or `null`, and `bits` is 1–64. RAW uses `timings` as alternating microsecond durations and `frequency` in hertz. Empty timings mean unconfigured. Invalid profile data returns `400` and leaves the existing profile active. The active profile ID is persisted in NVS. A regular firmware upload does not replace saved profiles.
+Each saved remote is `/remotes/{id}.json` in LittleFS. `id` uses lowercase letters, digits and underscores, up to 32 characters. Required fields are `id`, `device`, `default_frequency` (30–60 kHz), `repeat_interval_ms` (120–1000), `receiver_enabled`, `pages`, and `commands`. A command is a protocol plus encoded hex `code` and `bits`, or `RAW` with alternating mark/space `timings` in microseconds. `frequency` may be set on each command; RAW can also have a fractional `duty_cycle` from a Flipper file. Encoded protocols are `NEC`, `SONY`, `RC5`, and `RC6`; RC5/RC6 use 36 kHz and have per-press toggle handling. An encoded `code: null` or empty RAW timings means unconfigured.
 
-To create a profile, take a copy of an existing profile, change `id` and `device`, clear its codes if appropriate, and POST the entire JSON to `/api/remotes`. A new profile becomes active. To import over the active profile, use `/api/config/import` with the same ID. Download each profile with `/api/config/export` before a full flash erase or LittleFS upload.
+Pages contain groups, and groups contain buttons that reference command names. A profile may have 1–6 pages, 1–12 groups per page, up to 96 commands and visible buttons, and at most 300 RAW timings / 300 ms per command. The device holds up to eight profiles. Profile updates use a temporary file and backup. The active ID is stored in NVS; Finder feedback uses `/candidate_feedback.json`. A regular firmware upload preserves both. A full flash erase, changed partition table or explicit `uploadfs` can remove LittleFS contents. Download each profile with `/api/config/export` before such operations.
 
-Learn a code:
+The Flipper importer accepts version-1 `.ir` parsed NEC, NECext, RC5 and RC6 mode 0, plus RAW. It preserves original signal names and parsed address/command metadata. Unsupported protocols fail rather than being sent with a guessed encoder. See [Finder and source notes](code-finder.md) for conversion details. LIRC, IRDB CSV, Pronto and Broadlink are not currently parsed.
 
-```sh
-curl -H 'Content-Type: application/json' -d '{"command":"power"}' -X POST http://192.168.4.1/api/learn/start
-curl http://192.168.4.1/api/learn/status
-curl -X POST http://192.168.4.1/api/learn/commit
-```
-
-`GET /api/learn/status` reports `idle`, `waiting`, `captured`, `timeout`, `signal_too_long`, `capture_failed`, or `saved`. A captured response includes a `candidate` object. If the receiver is disabled, start returns `409`.
-
-The AP is open, so anyone within radio range can use this API. ArduinoOTA has a separate password printed on serial.
+The optional receive endpoints require a compatible 3.3 V IR receiver and a build with `IR_ENABLE_RX=1`. The default XIAO build ships with RX disabled. A captured unknown protocol is stored as RAW at the configured default frequency, which may need correction after testing.

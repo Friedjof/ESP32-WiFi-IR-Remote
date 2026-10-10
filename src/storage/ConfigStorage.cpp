@@ -200,7 +200,15 @@ bool ConfigStorage::validate(JsonDocument& doc, String& error) const {
     }
     uint32_t commandFreq = cmd["frequency"] | freq;
     if (commandFreq < 30000 || commandFreq > 60000) { error = "Invalid frequency: " + name; return false; }
+    if ((!strcmp(proto, "RC5") || !strcmp(proto, "RC6")) && commandFreq != 36000 && !cmd["code"].isNull()) {
+      error = "RC5 and RC6 require 36000 Hz: " + name; return false;
+    }
     if (!strcmp(proto, "RAW")) {
+      if (!cmd["duty_cycle"].isNull()) {
+        String duty = cmd["duty_cycle"].as<String>();
+        float value = duty.toFloat();
+        if (value <= 0 || value > 1 || duty.length() > 12) { error = "Invalid RAW duty cycle: " + name; return false; }
+      }
       if (!cmd["timings"].is<JsonArray>()) { error = "RAW needs timings: " + name; return false; }
       JsonArray timings = cmd["timings"].as<JsonArray>();
       if (timings.size() > MAX_RAW_TIMINGS) { error = "RAW too long: " + name; return false; }
@@ -214,6 +222,8 @@ bool ConfigStorage::validate(JsonDocument& doc, String& error) const {
       if (!cmd["bits"].is<uint16_t>()) { error = "Invalid bits: " + name; return false; }
       uint16_t bits = cmd["bits"].as<uint16_t>();
       if (bits < 1 || bits > 64) { error = "Bits out of range: " + name; return false; }
+      if (!strcmp(proto, "RC5") && bits != 12 && bits != 13) { error = "RC5 must use 12 or 13 bits: " + name; return false; }
+      if (!strcmp(proto, "RC6") && bits != 20 && bits != 36) { error = "RC6 must use 20 or 36 bits: " + name; return false; }
       if (!cmd["code"].isNull()) {
         uint64_t value;
         if (!cmd["code"].is<const char*>() || !parseHex(cmd["code"].as<const char*>(), value)) { error = "Code must be a hex string: " + name; return false; }
@@ -319,6 +329,14 @@ bool ConfigStorage::replace(const String& json, String& error) {
   if (parseError) { error = parseError.c_str(); return false; }
   if (!validate(candidate, error)) return false;
   if (candidate["id"].as<String>() != activeId_) { error = "Profile id cannot be changed"; return false; }
+  JsonArray confirmed = candidate["origin"]["confirmed_commands"].as<JsonArray>();
+  for (int index = static_cast<int>(confirmed.size()) - 1; index >= 0; --index) {
+    String name = confirmed[index].as<String>();
+    String oldCommand, newCommand;
+    serializeJson(config_["commands"][name], oldCommand);
+    serializeJson(candidate["commands"][name], newCommand);
+    if (oldCommand != newCommand) confirmed.remove(index);
+  }
   if (!writeProfile(activeId_, candidate, error)) return false;
   config_.clear();
   config_.set(candidate.as<JsonVariantConst>());
@@ -426,16 +444,35 @@ bool ConfigStorage::makeJob(const String& name, IrJob& job, String& error) const
   if (!hasCommand(name)) { error = "Unknown command"; return false; }
   if (!isConfigured(name)) { error = "Command is not configured"; return false; }
   JsonVariantConst cmd = config_["commands"][name];
+  return makeJobFrom(cmd, frequency(), name, job, error);
+}
+
+bool ConfigStorage::makeJobFrom(JsonVariantConst cmd, uint32_t defaultFrequency,
+                                const String& name, IrJob& job, String& error) {
+  if (!validName(name) || !cmd.is<JsonObjectConst>()) { error = "Unknown command"; return false; }
   const char* protocol = cmd["protocol"];
+  if (!protocol || (strcmp(protocol, "NEC") && strcmp(protocol, "SONY") &&
+      strcmp(protocol, "RC5") && strcmp(protocol, "RC6") && strcmp(protocol, "RAW"))) {
+    error = "Unsupported protocol"; return false;
+  }
   job.protocol = !strcmp(protocol, "NEC") ? IrProtocol::Nec : !strcmp(protocol, "SONY") ? IrProtocol::Sony : !strcmp(protocol, "RC5") ? IrProtocol::Rc5 : !strcmp(protocol, "RC6") ? IrProtocol::Rc6 : IrProtocol::Raw;
-  job.frequency = cmd["frequency"] | frequency();
+  job.frequency = cmd["frequency"] | defaultFrequency;
+  if (job.frequency < 30000 || job.frequency > 60000) { error = "Invalid frequency"; return false; }
   name.toCharArray(job.name, sizeof(job.name));
   if (job.protocol == IrProtocol::Raw) {
+    if (!cmd["duty_cycle"].isNull()) {
+      float fraction = cmd["duty_cycle"].as<String>().toFloat();
+      job.dutyCycle = static_cast<uint8_t>(fraction * 100 + 0.5f);
+    }
     job.length = 0;
-    for (JsonVariantConst timing : cmd["timings"].as<JsonArrayConst>()) job.timings[job.length++] = timing.as<uint16_t>();
+    JsonArrayConst timings = cmd["timings"].as<JsonArrayConst>();
+    if (!timings.size() || timings.size() > MAX_RAW_TIMINGS) { error = "RAW signal is empty or too long"; return false; }
+    for (JsonVariantConst timing : timings) job.timings[job.length++] = timing.as<uint16_t>();
   } else {
     job.bits = cmd["bits"].as<uint16_t>();
-    parseHex(cmd["code"].as<const char*>(), job.code);
+    if (!job.bits || job.bits > 64 || !parseHex(cmd["code"].as<const char*>(), job.code)) {
+      error = "Invalid encoded IR command"; return false;
+    }
   }
   return true;
 }

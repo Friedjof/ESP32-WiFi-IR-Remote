@@ -4,16 +4,18 @@
 #include "network/WifiManager.h"
 #include "ir/IrTransmitter.h"
 #include "ir/IrReceiver.h"
+#include "finder/CandidateCatalog.h"
 
 class RemoteWebServer {
  public:
-  RemoteWebServer(ConfigStorage& config, NetworkManager& network, IrTransmitter& tx, IrReceiver& rx)
-    : config_(config), network_(network), tx_(tx), rx_(rx), server_(80) {}
+  RemoteWebServer(ConfigStorage& config, CandidateCatalog& candidates, NetworkManager& network, IrTransmitter& tx, IrReceiver& rx)
+    : config_(config), candidates_(candidates), network_(network), tx_(tx), rx_(rx), server_(80) {}
   void begin();
   void loop();
 
  private:
   ConfigStorage& config_;
+  CandidateCatalog& candidates_;
   NetworkManager& network_;
   IrTransmitter& tx_;
   IrReceiver& rx_;
@@ -38,5 +40,9 @@ class RemoteWebServer {
   void learnStatus();
   void commitLearn();
   void sendCommand(const String& name);
+  void candidateTest(const String& id);
+  void candidateFeedback(const String& id);
+  void candidateActivate(const String& id);
+  void importFlipper();
   void notFound();
 };

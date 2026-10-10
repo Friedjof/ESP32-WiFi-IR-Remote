@@ -1,7 +1,7 @@
 # Learning IR codes
 
 1. Connect a 3.3 V compatible 38 kHz demodulating receiver. On the classic ESP32 DevKit, use GPIO27. On the ESP32-C3, select a free valid pin (GPIO3 is configured as an example), set `IR_ENABLE_RX=1` in `platformio.ini`, and rebuild.
-2. Select the remote profile, open **Codes**, change `receiver_enabled` to `true` in its JSON and save.
+2. Select the remote profile, open **Settings**, change `receiver_enabled` to `true` in its JSON and save.
 3. Choose a command and press **Learn IR code**.
 4. Point the original remote at the receiver and press the corresponding key once within 20 seconds.
 5. Review the decoded protocol, hexadecimal value and bit count, or RAW timing array for unknown protocols.

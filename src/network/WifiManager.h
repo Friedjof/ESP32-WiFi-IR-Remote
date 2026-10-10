@@ -13,17 +13,28 @@ class NetworkManager {
   bool apActive() const { return apActive_; }
   const String& apName() const { return apName_; }
   const String& otaPassword() const { return otaPassword_; }
+  bool stationConfigured() const { return !stationSsid_.isEmpty(); }
+  bool stationConnected() const { return WiFi.status() == WL_CONNECTED; }
+  const String& stationSsid() const { return stationSsid_; }
+  bool configureStation(const String& ssid, const String& password, String& error);
+  const String& adminPassword() const { return adminPassword_; }
+  bool configureAdmin(const String& password, String& error);
 
  private:
   Preferences prefs_;
   DNSServer dns_;
   String otaPassword_;
   String apName_;
+  String stationSsid_;
+  String stationPassword_;
+  String adminPassword_;
   bool apActive_ = false;
   bool serialWasConnected_ = false;
   bool mdnsStarted_ = false;
   uint32_t lastStartAttempt_ = 0;
+  uint32_t lastStationAttempt_ = 0;
   String secret(const char* key, size_t length);
   void printInfo();
   bool startAp();
+  void connectStation();
 };

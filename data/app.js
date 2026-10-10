@@ -11,6 +11,10 @@ let learnTimer = null;
 let noticeTimer = null;
 let wasConnected = false;
 let refreshing = null;
+let finderCatalog = [];
+let finderFeedback = {};
+let lastFinderTest = null;
+const safeFinderKeys = new Set(['volume_up','volume_down','mute','up','down','left','right','ok','home','back','input','channel_up','channel_down','menu','exit']);
 
 async function api(path, options = {}) {
   const controller = new AbortController();
@@ -36,9 +40,9 @@ function notice(message, success = false) {
   noticeTimer = setTimeout(() => { element.hidden = true; }, success ? 3000 : 6000);
 }
 
-async function sendCommand(name) {
+async function sendCommand(name, held = false) {
   try {
-    await api(`/api/commands/${encodeURIComponent(name)}/send`, {method:'POST'});
+    await api(`/api/commands/${encodeURIComponent(name)}/send`, {method:'POST', headers:{'X-IR-Held':held ? '1' : '0'}});
   } catch (error) { notice(`${name.replaceAll('_',' ')}: ${error.message}`); }
 }
 
@@ -60,7 +64,7 @@ function bindButton(button, spec) {
     sendCommand(spec.command);
     if (spec.repeat) {
       holdTimeout = setTimeout(() => {
-        holdInterval = setInterval(() => sendCommand(spec.command), repeatInterval);
+        holdInterval = setInterval(() => sendCommand(spec.command, true), repeatInterval);
       }, 440);
     }
   });
@@ -78,7 +82,10 @@ function makeButton(spec) {
   button.setAttribute('aria-label', spec.label);
   if (tones.has(spec.tone)) button.classList.add(`tone-${spec.tone}`);
   if (!commands[spec.command]?.configured) button.classList.add('unconfigured');
-  button.title = commands[spec.command]?.configured ? spec.label : `${spec.label}: IR code not configured`;
+  const confirmed = profile?.origin?.confirmed_commands?.includes(spec.command);
+  if (confirmed) button.classList.add('confirmed');
+  button.title = !commands[spec.command]?.configured ? `${spec.label}: IR code not configured` :
+    confirmed ? `${spec.label}: marked working during Finder test` : `${spec.label}: not confirmed on this TV`;
   if (spec.span) button.style.gridColumn = `span ${spec.span}`;
   if (spec.column) {
     button.style.gridColumnStart = spec.column;
@@ -147,7 +154,7 @@ function renderRemote() {
     host.append(section);
     tabs.append(makeTab(section.id, page.label));
   }
-  tabs.append(makeTab('codes', 'Codes'), makeTab('diagnostics', 'Status'));
+  tabs.append(makeTab('finder', 'Finder'), makeTab('codes', 'Settings'), makeTab('diagnostics', 'Status'));
   activateTab(`page-${profile.pages[0].id}`);
 }
 
@@ -161,6 +168,9 @@ async function refreshProfile() {
     commands = commandList.commands || {};
     repeatInterval = commandList.repeat_interval_ms || 250;
     $('#target').textContent = profile.device;
+    const confirmed = profile.origin?.confirmed_commands || [];
+    $('#profile-proof').textContent = confirmed.length ?
+      `Tested working: ${confirmed.map(prettyKey).join(', ')}` : 'No keys confirmed on this device yet.';
     $('#config-editor').value = JSON.stringify(profile, null, 2);
     const select = $('#profile-select');
     select.replaceChildren(...remoteList.profiles.map(item => {
@@ -179,6 +189,15 @@ async function refreshProfile() {
       return option;
     }));
     if (commands[previous]) learnSelect.value = previous;
+    const editSelect = $('#key-edit-command');
+    const previousEdit = editSelect.value;
+    editSelect.replaceChildren(...Object.keys(commands).sort().map(name => {
+      const option = document.createElement('option');
+      option.value = name; option.textContent = prettyKey(name);
+      return option;
+    }));
+    if (commands[previousEdit]) editSelect.value = previousEdit;
+    populateKeyEditor();
     renderRemote();
   })();
   try { await refreshing; } finally { refreshing = null; }
@@ -195,19 +214,224 @@ async function loadStatus() {
     }
     wasConnected = data.wifi.connected;
   } catch (error) {
+    const lostConnection = wasConnected;
     wasConnected = false;
     $('#connection').classList.remove('online');
     $('#connection-text').textContent = 'Offline';
     $('#status-json').textContent = error.message;
-    notice(error.message);
+    if (lostConnection) notice(error.message);
   }
 }
+
+function prettyKey(name) { return name.replaceAll('_', ' ').replace(/\b\w/g, letter => letter.toUpperCase()); }
+
+function renderFinder() {
+  const brand = $('#finder-brand').value;
+  const picker = $('#finder-profile');
+  const previous = picker.value;
+  picker.replaceChildren(...finderCatalog.filter(item => item.manufacturer === brand).map(item => {
+    const option = document.createElement('option');
+    option.value = item.id;
+    option.textContent = item.name;
+    return option;
+  }));
+  if ([...picker.options].some(option => option.value === previous)) picker.value = previous;
+  const selected = finderCatalog.find(item => item.id === picker.value);
+  const meta = $('#finder-meta');
+  meta.replaceChildren();
+  const keyPicker = $('#finder-command');
+  const previousKey = keyPicker.value;
+  keyPicker.replaceChildren();
+  if (!selected) { meta.textContent = 'No candidates available.'; return; }
+  const summary = document.createElement('p');
+  summary.textContent = `${selected.protocol} · ${Math.round(selected.frequency / 1000)} kHz · ${Object.keys(selected.commands).length} commands · ${selected.status.replaceAll('_',' ')}`;
+  const models = document.createElement('p');
+  models.textContent = `Models: ${selected.models.join(', ')}. ${selected.notes}`;
+  const source = document.createElement('p');
+  source.textContent = `Source: ${selected.source}`;
+  meta.append(summary, models, source);
+  if (selected.url?.startsWith('https://github.com/')) {
+    const link = document.createElement('a');
+    link.href = selected.url; link.target = '_blank'; link.rel = 'noopener noreferrer';
+    link.textContent = 'View original data';
+    meta.append(link);
+  }
+  for (const name of Object.keys(selected.commands).filter(key => safeFinderKeys.has(key))) {
+    const option = document.createElement('option');
+    option.value = name; option.textContent = prettyKey(name);
+    keyPicker.append(option);
+  }
+  if ([...keyPicker.options].some(option => option.value === previousKey)) keyPicker.value = previousKey;
+  else if ([...keyPicker.options].some(option => option.value === 'volume_up')) keyPicker.value = 'volume_up';
+  const results = finderFeedback[selected.id] || {};
+  const good = Object.entries(results).filter(([, worked]) => worked).map(([name]) => prettyKey(name));
+  const bad = Object.entries(results).filter(([, worked]) => !worked).map(([name]) => prettyKey(name));
+  $('#finder-progress').textContent = `Worked: ${good.join(', ') || 'none'} · Did not work: ${bad.join(', ') || 'none'}. Confirm two different keys to save.`;
+  $('#finder-activate').disabled = good.length < 2;
+  $('#finder-question').hidden = true;
+  lastFinderTest = null;
+}
+
+async function loadCandidates() {
+  const data = await api('/api/candidates');
+  finderCatalog = data.profiles || [];
+  finderFeedback = data.feedback || {};
+  renderFinder();
+}
+
+$('#finder-brand').addEventListener('change', renderFinder);
+$('#finder-profile').addEventListener('change', renderFinder);
+$('#finder-test').addEventListener('click', async () => {
+  const id = $('#finder-profile').value, command = $('#finder-command').value;
+  if (!id || !command) return;
+  try {
+    await api(`/api/candidates/${encodeURIComponent(id)}/test`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({command})});
+    lastFinderTest = {id, command};
+    $('#finder-question').hidden = false;
+    notice(`Sent ${prettyKey(command)} once. Check the TV.`, true);
+  } catch (error) { notice(error.message); }
+});
+
+async function answerFinder(worked) {
+  if (!lastFinderTest) return;
+  const {id, command} = lastFinderTest;
+  try {
+    await api(`/api/candidates/${encodeURIComponent(id)}/feedback`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({command, worked})});
+    finderFeedback[id] ||= {};
+    finderFeedback[id][command] = worked;
+    renderFinder();
+    notice(worked ? 'Working key saved. Test another key.' : 'Result saved. Try another key or profile.', true);
+  } catch (error) { notice(error.message); }
+}
+$('#finder-yes').addEventListener('click', () => answerFinder(true));
+$('#finder-no').addEventListener('click', () => answerFinder(false));
+$('#finder-activate').addEventListener('click', async () => {
+  const id = $('#finder-profile').value;
+  if (!id || !confirm('Save this candidate as a remote? Commands you have not tested may still be wrong for your TV.')) return;
+  try {
+    await api(`/api/candidates/${encodeURIComponent(id)}/activate`, {method:'POST'});
+    await refreshProfile();
+    notice('Candidate saved as the active remote. Untested keys remain unverified.', true);
+  } catch (error) { notice(error.message); }
+});
+$('#finder-reset').addEventListener('click', async () => {
+  const id = $('#finder-profile').value;
+  if (!id || !confirm('Clear all saved test results for this candidate?')) return;
+  try {
+    await api(`/api/candidates/${encodeURIComponent(id)}/feedback`, {method:'DELETE'});
+    await loadCandidates();
+    notice('Finder results cleared.', true);
+  } catch (error) { notice(error.message); }
+});
+
+$('#flipper-file').addEventListener('change', event => {
+  const file = event.target.files[0];
+  $('#flipper-selected').textContent = file ? `${file.name} · ${file.size} bytes` : 'No file selected.';
+  if (file && !$('#flipper-name').value.trim()) $('#flipper-name').value = file.name.replace(/\.ir$/i, '').replaceAll('_', ' ');
+});
+$('#flipper-import').addEventListener('click', async () => {
+  const file = $('#flipper-file').files[0];
+  const device = $('#flipper-name').value.trim();
+  if (!file || !device) { notice('Choose a .ir file and enter a remote name.'); return; }
+  if (file.size > 24576) { notice('File exceeds the 24 KB import limit.'); return; }
+  const id = device.toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '').slice(0,32);
+  if (!id) { notice('Use letters or numbers in the remote name.'); return; }
+  try {
+    const content = await file.text();
+    const result = await api('/api/import/flipper', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({id, device, content})});
+    await refreshProfile();
+    notice(`Imported ${result.commands} signals. Test before relying on them.`, true);
+  } catch (error) { notice(`Flipper import failed: ${error.message}`); }
+});
+
+async function loadNetwork() {
+  const [network, security] = await Promise.all([api('/api/network'), api('/api/security')]);
+  $('#wifi-ssid').value = network.station.ssid || '';
+  $('#wifi-state').textContent = network.station.connected ? `Connected: ${network.station.ip}` : network.station.configured ? 'Connecting or offline. Open AP stays available.' : 'Home WiFi is not configured.';
+  $('#admin-state').textContent = security.admin_password_set ? 'Admin password enabled for changes.' : 'No admin password; anyone on the open AP can change settings.';
+}
+$('#wifi-save').addEventListener('click', async () => {
+  try {
+    await api('/api/network', {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ssid:$('#wifi-ssid').value.trim(), password:$('#wifi-password').value})});
+    $('#wifi-password').value = '';
+    notice('Connecting to home WiFi. The open AP remains available.', true);
+    setTimeout(() => loadNetwork().catch(error => notice(error.message)), 5000);
+  } catch (error) { notice(error.message); }
+});
+$('#wifi-clear').addEventListener('click', async () => {
+  try {
+    await api('/api/network', {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ssid:'',password:''})});
+    await loadNetwork(); notice('Home WiFi forgotten. The AP remains on.', true);
+  } catch (error) { notice(error.message); }
+});
+async function setAdmin(password) {
+  try {
+    await api('/api/security', {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify({password})});
+    $('#admin-password').value = '';
+    await loadNetwork(); notice('Admin access updated.', true);
+  } catch (error) { notice(error.message); }
+}
+$('#admin-save').addEventListener('click', () => setAdmin($('#admin-password').value));
+$('#admin-clear').addEventListener('click', () => setAdmin(''));
 
 $('#profile-select').addEventListener('change', async event => {
   try {
     await api('/api/remotes/active', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({id:event.target.value})});
     await refreshProfile();
   } catch (error) { notice(error.message); await refreshProfile().catch(() => {}); }
+});
+
+function populateKeyEditor() {
+  const command = profile?.commands?.[$('#key-edit-command').value];
+  if (!command) return;
+  $('#key-edit-protocol').value = command.protocol;
+  $('#key-edit-frequency').value = command.frequency || profile.default_frequency;
+  $('#key-edit-code').value = command.code || '';
+  $('#key-edit-bits').value = command.bits || 32;
+  $('#key-edit-timings').value = (command.timings || []).join(' ');
+  $('#key-edit-encoded').hidden = command.protocol === 'RAW';
+  $('#key-edit-raw').hidden = command.protocol !== 'RAW';
+}
+$('#key-edit-command').addEventListener('change', populateKeyEditor);
+$('#key-edit-protocol').addEventListener('change', () => {
+  const protocol = $('#key-edit-protocol').value;
+  $('#key-edit-encoded').hidden = protocol === 'RAW';
+  $('#key-edit-raw').hidden = protocol !== 'RAW';
+  if (protocol === 'RC5' || protocol === 'RC6') $('#key-edit-frequency').value = 36000;
+  else if (protocol === 'SONY') $('#key-edit-frequency').value = 40000;
+  else $('#key-edit-frequency').value = 38000;
+  if (protocol === 'RC5') $('#key-edit-bits').value = 12;
+  if (protocol === 'RC6') $('#key-edit-bits').value = 20;
+  if (protocol === 'NEC') $('#key-edit-bits').value = 32;
+});
+$('#key-edit-save').addEventListener('click', async () => {
+  if (!profile) return;
+  const name = $('#key-edit-command').value;
+  const protocol = $('#key-edit-protocol').value;
+  const frequency = Number($('#key-edit-frequency').value);
+  if (!Number.isInteger(frequency) || frequency < 30000 || frequency > 60000) { notice('Frequency must be 30000–60000 Hz.'); return; }
+  let command = {protocol, frequency};
+  if (protocol === 'RAW') {
+    const raw = $('#key-edit-timings').value.trim();
+    if (raw && !/^\d+(?:\s+\d+)*$/.test(raw)) { notice('RAW timings must be whole microsecond values separated by spaces.'); return; }
+    command.timings = raw ? raw.split(/\s+/).map(Number) : [];
+    const oldDuty = profile.commands[name].duty_cycle;
+    if (oldDuty && profile.commands[name].protocol === 'RAW') command.duty_cycle = oldDuty;
+  } else {
+    const code = $('#key-edit-code').value.trim();
+    const bits = Number($('#key-edit-bits').value);
+    if (code && !/^(?:0x)?[0-9a-f]{1,16}$/i.test(code)) { notice('Enter a hexadecimal code, optionally prefixed with 0x.'); return; }
+    if (!Number.isInteger(bits) || bits < 1 || bits > 64) { notice('Bits must be between 1 and 64.'); return; }
+    command.code = code || null;
+    command.bits = bits;
+  }
+  const updated = JSON.parse(JSON.stringify(profile));
+  updated.commands[name] = command;
+  try {
+    await api('/api/config', {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(updated)});
+    await refreshProfile();
+    notice(`${prettyKey(name)} saved.`, true);
+  } catch (error) { notice(`Key not saved: ${error.message}`); }
 });
 
 $('#create-profile').addEventListener('click', async () => {
@@ -218,6 +442,7 @@ $('#create-profile').addEventListener('click', async () => {
   const copy = JSON.parse(JSON.stringify(profile));
   copy.id = id;
   copy.device = name;
+  delete copy.origin;
   for (const command of Object.values(copy.commands)) {
     if (command.protocol === 'RAW') command.timings = [];
     else command.code = null;
@@ -298,4 +523,6 @@ $('#restart').addEventListener('click', async () => {
 });
 
 loadStatus();
+loadCandidates().catch(error => notice(`Finder unavailable: ${error.message}`));
+loadNetwork().catch(error => notice(`Network settings unavailable: ${error.message}`));
 setInterval(loadStatus, 10000);

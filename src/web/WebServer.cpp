@@ -1,16 +1,24 @@
 #include "WebServer.h"
 #include <WiFi.h>
 #include "generated/web_files.h"
+#include "finder/FlipperImporter.h"
 
 bool RemoteWebServer::authorize() {
   IPAddress remote = server_.client().remoteIP();
-  IPAddress local = WiFi.softAPIP();
-  const IPAddress mask(255, 255, 255, 0);
-  for (int i = 0; i < 4; ++i) {
-    if ((remote[i] & mask[i]) != (local[i] & mask[i])) {
-      sendError(403, "Only clients on the remote WiFi are allowed");
-      return false;
-    }
+  const IPAddress apMask(255, 255, 255, 0);
+  auto subnetMatch = [&](IPAddress local, IPAddress mask) {
+    for (int i = 0; i < 4; ++i) if ((remote[i] & mask[i]) != (local[i] & mask[i])) return false;
+    return true;
+  };
+  if (!subnetMatch(WiFi.softAPIP(), apMask) &&
+      !(network_.stationConnected() && subnetMatch(WiFi.localIP(), WiFi.subnetMask()))) {
+    sendError(403, "Only local AP or home WiFi clients are allowed");
+    return false;
+  }
+  if (server_.method() != HTTP_GET && !network_.adminPassword().isEmpty() &&
+      !server_.authenticate("admin", network_.adminPassword().c_str())) {
+    server_.requestAuthentication(BASIC_AUTH, "IR Remote administration", "Admin password required");
+    return false;
   }
   return true;
 }
@@ -30,7 +38,7 @@ void RemoteWebServer::sendError(int code, const String& message) {
 }
 
 void RemoteWebServer::redirectToRemote() {
-  server_.sendHeader("Location", "http://" + WiFi.softAPIP().toString() + "/", true);
+  server_.sendHeader("Location", "/", true);
   server_.sendHeader("Cache-Control", "no-store");
   server_.send(302, "text/plain", "");
 }
@@ -49,6 +57,8 @@ void RemoteWebServer::serveFile(const char* path, const char* mime) {
 }
 
 void RemoteWebServer::begin() {
+  const char* headers[] = {"X-IR-Held"};
+  server_.collectHeaders(headers, 1);
   server_.on("/", HTTP_GET, [this]() { serveFile("/", "text/html; charset=utf-8"); });
   server_.on("/style.css", HTTP_GET, [this]() { serveFile("/style.css", "text/css; charset=utf-8"); });
   server_.on("/app.js", HTTP_GET, [this]() { serveFile("/app.js", "application/javascript; charset=utf-8"); });
@@ -58,8 +68,53 @@ void RemoteWebServer::begin() {
     server_.on(path, HTTP_GET, [this]() { redirectToRemote(); });
   }
   server_.on("/api/status", HTTP_GET, [this]() { if (authorize()) status(); });
+  server_.on("/api/network", HTTP_GET, [this]() {
+    if (!authorize()) return;
+    JsonDocument doc;
+    doc["ap"]["ssid"] = network_.apName();
+    doc["ap"]["ip"] = WiFi.softAPIP().toString();
+    doc["station"]["configured"] = network_.stationConfigured();
+    doc["station"]["connected"] = network_.stationConnected();
+    doc["station"]["ssid"] = network_.stationSsid();
+    if (network_.stationConnected()) doc["station"]["ip"] = WiFi.localIP().toString();
+    sendJson(200, doc);
+  });
+  server_.on("/api/network", HTTP_PUT, [this]() {
+    if (!authorize()) return;
+    JsonDocument input;
+    if (deserializeJson(input, server_.arg("plain")) || !input["ssid"].is<const char*>() || !input["password"].is<const char*>()) {
+      sendError(400, "Expected ssid and password strings; empty SSID disconnects home WiFi"); return;
+    }
+    String error;
+    if (!network_.configureStation(input["ssid"].as<String>(), input["password"].as<String>(), error)) {
+      sendError(400, error); return;
+    }
+    JsonDocument doc; doc["success"] = true; doc["connecting"] = network_.stationConfigured();
+    sendJson(200, doc);
+  });
+  server_.on("/api/security", HTTP_GET, [this]() {
+    if (!authorize()) return;
+    JsonDocument doc; doc["admin_password_set"] = !network_.adminPassword().isEmpty();
+    sendJson(200, doc);
+  });
+  server_.on("/api/security", HTTP_PUT, [this]() {
+    if (!authorize()) return;
+    JsonDocument input;
+    if (deserializeJson(input, server_.arg("plain")) || !input["password"].is<const char*>()) {
+      sendError(400, "Expected password string; empty removes authentication"); return;
+    }
+    String error;
+    if (!network_.configureAdmin(input["password"].as<String>(), error)) { sendError(400, error); return; }
+    JsonDocument doc; doc["success"] = true; doc["admin_password_set"] = !network_.adminPassword().isEmpty();
+    sendJson(200, doc);
+  });
   server_.on("/api/commands", HTTP_GET, [this]() { if (authorize()) commands(); });
   server_.on("/api/remotes", HTTP_GET, [this]() { if (authorize()) remotes(); });
+  server_.on("/api/candidates", HTTP_GET, [this]() {
+    if (!authorize()) return;
+    JsonDocument doc; candidates_.list(doc); sendJson(200, doc);
+  });
+  server_.on("/api/import/flipper", HTTP_POST, [this]() { if (authorize()) importFlipper(); });
   server_.on("/api/remotes", HTTP_POST, [this]() { if (authorize()) createRemote(); });
   server_.on("/api/remotes/active", HTTP_POST, [this]() { if (authorize()) selectRemote(); });
   server_.on("/api/config", HTTP_GET, [this]() { if (authorize()) getConfig(); });
@@ -91,11 +146,16 @@ void RemoteWebServer::status() {
   doc["active_remote"] = config_.activeId();
   doc["hostname"] = DEVICE_HOSTNAME;
   doc["firmware"] = FIRMWARE_VERSION;
-  doc["wifi"]["connected"] = network_.apActive();
-  doc["wifi"]["mode"] = "ap";
+  doc["wifi"]["connected"] = network_.apActive() || network_.stationConnected();
+  doc["wifi"]["mode"] = network_.stationConfigured() ? "ap_sta" : "ap";
   doc["wifi"]["ssid"] = network_.apName();
   doc["wifi"]["ip"] = WiFi.softAPIP().toString();
   doc["wifi"]["clients"] = WiFi.softAPgetStationNum();
+  doc["wifi"]["station_connected"] = network_.stationConnected();
+  if (network_.stationConnected()) {
+    doc["wifi"]["station_ip"] = WiFi.localIP().toString();
+    doc["wifi"]["rssi"] = WiFi.RSSI();
+  }
   doc["ir"]["enabled"] = true;
   doc["ir"]["frequency"] = config_.frequency();
   doc["ir"]["queued"] = tx_.queued();
@@ -229,12 +289,77 @@ void RemoteWebServer::sendCommand(const String& name) {
   IrJob job;
   String error;
   if (!config_.makeJob(name, job, error)) { sendError(409, error); return; }
+  job.held = server_.header("X-IR-Held") == "1";
   uint32_t now = millis();
   if (lastAccepted_ && now - lastAccepted_ < 120) { sendError(429, "Command rate limit: wait 120 ms"); return; }
   if (!tx_.enqueue(job)) { sendError(503, "IR queue is full"); return; }
   lastAccepted_ = now;
   JsonDocument doc; doc["success"] = true; doc["command"] = name; doc["queued"] = true;
   sendJson(202, doc);
+}
+
+void RemoteWebServer::candidateTest(const String& id) {
+  JsonDocument input;
+  if (deserializeJson(input, server_.arg("plain")) || !input["command"].is<const char*>()) {
+    sendError(400, "Expected JSON with command"); return;
+  }
+  String command = input["command"].as<String>();
+  IrJob job;
+  String error;
+  if (!candidates_.makeTestJob(id, command, job, error)) { sendError(400, error); return; }
+  uint32_t now = millis();
+  if (lastAccepted_ && now - lastAccepted_ < 120) { sendError(429, "Command rate limit: wait 120 ms"); return; }
+  if (!tx_.enqueue(job)) { sendError(503, "IR queue is full"); return; }
+  lastAccepted_ = now;
+  JsonDocument doc;
+  doc["success"] = true; doc["candidate"] = id; doc["command"] = command; doc["queued"] = true;
+  sendJson(202, doc);
+}
+
+void RemoteWebServer::candidateFeedback(const String& id) {
+  JsonDocument input;
+  if (deserializeJson(input, server_.arg("plain")) || !input["command"].is<const char*>() ||
+      !input["worked"].is<bool>()) { sendError(400, "Expected command and boolean worked"); return; }
+  String error;
+  if (!candidates_.record(id, input["command"].as<String>(), input["worked"].as<bool>(), error)) {
+    sendError(400, error); return;
+  }
+  JsonDocument doc;
+  doc["success"] = true; doc["candidate"] = id;
+  sendJson(200, doc);
+}
+
+void RemoteWebServer::candidateActivate(const String& id) {
+  String error;
+  if (!candidates_.activate(id, config_, error)) { sendError(409, error); return; }
+  rx_.setEnabled(false); rx_.setEnabled(config_.receiverEnabled());
+  JsonDocument doc;
+  doc["success"] = true; doc["active"] = config_.activeId();
+  sendJson(200, doc);
+}
+
+void RemoteWebServer::importFlipper() {
+  JsonDocument input;
+  if (server_.arg("plain").length() > MAX_CONFIG_BYTES + 8192 ||
+      deserializeJson(input, server_.arg("plain")) ||
+      !input["id"].is<const char*>() || !input["device"].is<const char*>() ||
+      !input["content"].is<const char*>()) {
+    sendError(400, "Expected id, device and Flipper file content"); return;
+  }
+  JsonDocument converted;
+  String error;
+  if (!FlipperImporter::parse(input["content"].as<String>(), input["id"].as<String>(),
+                             input["device"].as<String>(), converted, error)) {
+    sendError(400, error); return;
+  }
+  String json;
+  serializeJson(converted, json);
+  if (!config_.create(json, error)) { sendError(400, error); return; }
+  rx_.setEnabled(false); rx_.setEnabled(config_.receiverEnabled());
+  JsonDocument doc;
+  doc["success"] = true; doc["active"] = config_.activeId();
+  doc["commands"] = converted["commands"].as<JsonObject>().size();
+  sendJson(201, doc);
 }
 
 void RemoteWebServer::notFound() {
@@ -246,6 +371,26 @@ void RemoteWebServer::notFound() {
     String name = uri.substring(prefix.length(), uri.length() - suffix.length());
     sendCommand(name);
     return;
+  }
+  const String candidatePrefix = "/api/candidates/";
+  if (server_.method() == HTTP_DELETE && uri.startsWith(candidatePrefix) && uri.endsWith("/feedback")) {
+    String id = uri.substring(candidatePrefix.length(), uri.length() - strlen("/feedback"));
+    String error;
+    if (!candidates_.clearFeedback(id, error)) { sendError(404, error); return; }
+    JsonDocument doc; doc["success"] = true; doc["candidate"] = id;
+    sendJson(200, doc);
+    return;
+  }
+  if (server_.method() == HTTP_POST && uri.startsWith(candidatePrefix)) {
+    String rest = uri.substring(candidatePrefix.length());
+    int split = rest.indexOf('/');
+    if (split > 0) {
+      String id = rest.substring(0, split), action = rest.substring(split + 1);
+      if (!candidates_.exists(id)) { sendError(404, "Candidate not found"); return; }
+      if (action == "test") { candidateTest(id); return; }
+      if (action == "feedback") { candidateFeedback(id); return; }
+      if (action == "activate") { candidateActivate(id); return; }
+    }
   }
   const String remotePrefix = "/api/remotes/";
   if (server_.method() == HTTP_DELETE && uri.startsWith(remotePrefix)) {

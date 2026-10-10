@@ -1,0 +1,426 @@
+{
+  "profiles": [
+    {
+      "id": "toshiba_ct90325",
+      "name": "Toshiba CT-90325",
+      "manufacturer": "Toshiba",
+      "models": [
+        "CT-90325"
+      ],
+      "protocol": "NEC",
+      "frequency": 38000,
+      "source": "Flipper-IRDB: Toshiba_CT-90325.ir",
+      "url": "https://github.com/Lucaslhm/Flipper-IRDB/blob/main/TVs/Toshiba/Toshiba_CT-90325.ir",
+      "status": "unverified_for_target",
+      "notes": "The source has volume commands 0x1A/0x1E, unlike the user-supplied 0xA0/0xF0.",
+      "commands": {
+        "power": {
+          "protocol": "NEC",
+          "code": "0x02FD48B7",
+          "bits": 32,
+          "frequency": 38000
+        },
+        "volume_up": {
+          "protocol": "NEC",
+          "code": "0x02FD58A7",
+          "bits": 32,
+          "frequency": 38000
+        },
+        "volume_down": {
+          "protocol": "NEC",
+          "code": "0x02FD7887",
+          "bits": 32,
+          "frequency": 38000
+        },
+        "channel_up": {
+          "protocol": "NEC",
+          "code": "0x02FDD827",
+          "bits": 32,
+          "frequency": 38000
+        },
+        "channel_down": {
+          "protocol": "NEC",
+          "code": "0x02FDF807",
+          "bits": 32,
+          "frequency": 38000
+        },
+        "input": {
+          "protocol": "NEC",
+          "code": "0x02FDF00F",
+          "bits": 32,
+          "frequency": 38000
+        },
+        "mute": {
+          "protocol": "NEC",
+          "code": "0x02FD08F7",
+          "bits": 32,
+          "frequency": 38000
+        },
+        "ok": {
+          "protocol": "NEC",
+          "code": "0x02FD916E",
+          "bits": 32,
+          "frequency": 38000
+        },
+        "right": {
+          "protocol": "NEC",
+          "code": "0x02FD9867",
+          "bits": 32,
+          "frequency": 38000
+        },
+        "up": {
+          "protocol": "NEC",
+          "code": "0x02FD41BE",
+          "bits": 32,
+          "frequency": 38000
+        },
+        "left": {
+          "protocol": "NEC",
+          "code": "0x02FDB847",
+          "bits": 32,
+          "frequency": 38000
+        },
+        "down": {
+          "protocol": "NEC",
+          "code": "0x02FDC13E",
+          "bits": 32,
+          "frequency": 38000
+        },
+        "play": {
+          "protocol": "NEC",
+          "code": "0x02FD0CF3",
+          "bits": 32,
+          "frequency": 38000
+        },
+        "stop": {
+          "protocol": "NEC",
+          "code": "0x02FD8C73",
+          "bits": 32,
+          "frequency": 38000
+        }
+      }
+    },
+    {
+      "id": "toshiba_ct8560",
+      "name": "Toshiba CT-8560",
+      "manufacturer": "Toshiba",
+      "models": [
+        "CT-8560"
+      ],
+      "protocol": "NEC",
+      "frequency": 38000,
+      "source": "Flipper-IRDB: Toshiba CT 8560.ir",
+      "url": "https://github.com/Lucaslhm/Flipper-IRDB/blob/main/TVs/Toshiba/Toshiba%20CT%208560.ir",
+      "status": "unverified_for_target",
+      "notes": "Shares volume codes with CT-90325 but has a different navigation and input map.",
+      "commands": {
+        "power": {
+          "protocol": "NEC",
+          "code": "0x02FD48B7",
+          "bits": 32,
+          "frequency": 38000
+        },
+        "volume_up": {
+          "protocol": "NEC",
+          "code": "0x02FD58A7",
+          "bits": 32,
+          "frequency": 38000
+        },
+        "volume_down": {
+          "protocol": "NEC",
+          "code": "0x02FD7887",
+          "bits": 32,
+          "frequency": 38000
+        },
+        "mute": {
+          "protocol": "NEC",
+          "code": "0x02FD08F7",
+          "bits": 32,
+          "frequency": 38000
+        },
+        "channel_up": {
+          "protocol": "NEC",
+          "code": "0x02FDD827",
+          "bits": 32,
+          "frequency": 38000
+        },
+        "channel_down": {
+          "protocol": "NEC",
+          "code": "0x02FDF807",
+          "bits": 32,
+          "frequency": 38000
+        },
+        "ok": {
+          "protocol": "NEC",
+          "code": "0x02FD847B",
+          "bits": 32,
+          "frequency": 38000
+        },
+        "up": {
+          "protocol": "NEC",
+          "code": "0x02FD9867",
+          "bits": 32,
+          "frequency": 38000
+        },
+        "down": {
+          "protocol": "NEC",
+          "code": "0x02FDB847",
+          "bits": 32,
+          "frequency": 38000
+        },
+        "left": {
+          "protocol": "NEC",
+          "code": "0x02FD42BD",
+          "bits": 32,
+          "frequency": 38000
+        },
+        "right": {
+          "protocol": "NEC",
+          "code": "0x02FD02FD",
+          "bits": 32,
+          "frequency": 38000
+        },
+        "back": {
+          "protocol": "NEC",
+          "code": "0x02FD26D9",
+          "bits": 32,
+          "frequency": 38000
+        },
+        "play": {
+          "protocol": "NEC",
+          "code": "0x02FDE619",
+          "bits": 32,
+          "frequency": 38000
+        },
+        "pause": {
+          "protocol": "NEC",
+          "code": "0x02FD56A9",
+          "bits": 32,
+          "frequency": 38000
+        },
+        "stop": {
+          "protocol": "NEC",
+          "code": "0x02FD16E9",
+          "bits": 32,
+          "frequency": 38000
+        },
+        "input": {
+          "protocol": "NEC",
+          "code": "0x02FD28D7",
+          "bits": 32,
+          "frequency": 38000
+        },
+        "exit": {
+          "protocol": "NEC",
+          "code": "0x02FDC23D",
+          "bits": 32,
+          "frequency": 38000
+        }
+      }
+    },
+    {
+      "id": "toshiba_ct8563",
+      "name": "Toshiba CT-8563",
+      "manufacturer": "Toshiba",
+      "models": [
+        "CT-8563"
+      ],
+      "protocol": "RC5",
+      "frequency": 36000,
+      "source": "Flipper-IRDB: Toshiba_Ct-8563.ir",
+      "url": "https://github.com/Lucaslhm/Flipper-IRDB/blob/main/TVs/Toshiba/Toshiba_Ct-8563.ir",
+      "status": "unverified_for_target",
+      "notes": "Matches the proposed RC5 address 0x01 pattern. CT-8543 and 43UL2163DAY compatibility is unverified.",
+      "commands": {
+        "power": {
+          "protocol": "RC5",
+          "code": "0x04C",
+          "bits": 12,
+          "frequency": 36000
+        },
+        "mute": {
+          "protocol": "RC5",
+          "code": "0x04D",
+          "bits": 12,
+          "frequency": 36000
+        },
+        "volume_up": {
+          "protocol": "RC5",
+          "code": "0x050",
+          "bits": 12,
+          "frequency": 36000
+        },
+        "volume_down": {
+          "protocol": "RC5",
+          "code": "0x051",
+          "bits": 12,
+          "frequency": 36000
+        },
+        "channel_up": {
+          "protocol": "RC5",
+          "code": "0x060",
+          "bits": 12,
+          "frequency": 36000
+        },
+        "channel_down": {
+          "protocol": "RC5",
+          "code": "0x061",
+          "bits": 12,
+          "frequency": 36000
+        },
+        "up": {
+          "protocol": "RC5",
+          "code": "0x054",
+          "bits": 12,
+          "frequency": 36000
+        },
+        "down": {
+          "protocol": "RC5",
+          "code": "0x053",
+          "bits": 12,
+          "frequency": 36000
+        },
+        "left": {
+          "protocol": "RC5",
+          "code": "0x055",
+          "bits": 12,
+          "frequency": 36000
+        },
+        "right": {
+          "protocol": "RC5",
+          "code": "0x056",
+          "bits": 12,
+          "frequency": 36000
+        },
+        "ok": {
+          "protocol": "RC5",
+          "code": "0x075",
+          "bits": 12,
+          "frequency": 36000
+        },
+        "menu": {
+          "protocol": "RC5",
+          "code": "0x070",
+          "bits": 12,
+          "frequency": 36000
+        },
+        "home": {
+          "protocol": "RC5",
+          "code": "0x06E",
+          "bits": 12,
+          "frequency": 36000
+        },
+        "back": {
+          "protocol": "RC5",
+          "code": "0x04A",
+          "bits": 12,
+          "frequency": 36000
+        },
+        "exit": {
+          "protocol": "RC5",
+          "code": "0x065",
+          "bits": 12,
+          "frequency": 36000
+        }
+      }
+    },
+    {
+      "id": "toshiba_user_nec",
+      "name": "Toshiba NEC values supplied by user",
+      "manufacturer": "Toshiba",
+      "models": [
+        "unspecified Toshiba TV"
+      ],
+      "protocol": "NEC",
+      "frequency": 38000,
+      "source": "User-supplied values; original source not independently verified",
+      "url": "",
+      "status": "unverified",
+      "notes": "These four full 32-bit codes are independent test values. Do not assume they match CT-90325 or the target TV.",
+      "commands": {
+        "power": {
+          "protocol": "NEC",
+          "code": "0x40BF12ED",
+          "bits": 32,
+          "frequency": 38000
+        },
+        "volume_up": {
+          "protocol": "NEC",
+          "code": "0x40BFA05F",
+          "bits": 32,
+          "frequency": 38000
+        },
+        "volume_down": {
+          "protocol": "NEC",
+          "code": "0x40BFF00F",
+          "bits": 32,
+          "frequency": 38000
+        },
+        "input": {
+          "protocol": "NEC",
+          "code": "0x40BF0FF0",
+          "bits": 32,
+          "frequency": 38000
+        }
+      }
+    },
+    {
+      "id": "vestel_generic",
+      "name": "Vestel generic TV (IRDB conversion)",
+      "manufacturer": "Vestel",
+      "models": [
+        "Unknown TV"
+      ],
+      "protocol": "NECext",
+      "frequency": 38000,
+      "source": "Flipper-IRDB conversion from IRDB, generic Vestel",
+      "url": "https://github.com/Lucaslhm/Flipper-IRDB/blob/main/_Converted_/CSV/V/Vestel/Unknown_TV/0,-1.ir",
+      "status": "unverified_for_target",
+      "notes": "Generic Vestel entry only. The source labels volume commands VOL_p and VOL+m; direction is ambiguous, so only navigation and mute are included.",
+      "commands": {
+        "mute": {
+          "protocol": "NEC",
+          "code": "0x0000B000",
+          "bits": 32,
+          "frequency": 38000
+        },
+        "left": {
+          "protocol": "NEC",
+          "code": "0x0000A800",
+          "bits": 32,
+          "frequency": 38000
+        },
+        "right": {
+          "protocol": "NEC",
+          "code": "0x00006800",
+          "bits": 32,
+          "frequency": 38000
+        },
+        "up": {
+          "protocol": "NEC",
+          "code": "0x00000400",
+          "bits": 32,
+          "frequency": 38000
+        },
+        "down": {
+          "protocol": "NEC",
+          "code": "0x00008400",
+          "bits": 32,
+          "frequency": 38000
+        },
+        "menu": {
+          "protocol": "NEC",
+          "code": "0x00000C00",
+          "bits": 32,
+          "frequency": 38000
+        },
+        "ok": {
+          "protocol": "NEC",
+          "code": "0x0000AC00",
+          "bits": 32,
+          "frequency": 38000
+        }
+      }
+    }
+  ]
+}

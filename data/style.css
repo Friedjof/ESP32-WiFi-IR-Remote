@@ -143,3 +143,19 @@ h1 { font-size: 1.38rem; line-height: 1.04; letter-spacing: -.04em; margin: 0; }
   .button-grid .key svg { width: 15px; height: 15px; }
   .group-label { margin-bottom: 3px; }
 }
+
+/* The finder is a compact settings panel; tests require an explicit tap. */
+.finder-intro { background: linear-gradient(145deg, #39304b, #242a36); }
+.finder-intro .eyebrow { margin-bottom: 7px; }
+.finder-row { display: grid; grid-template-columns: 1fr 1.4fr; gap: 10px; }
+.finder-row label { margin-top: 0; }
+.finder-meta { margin: 15px 0; padding: 12px; border: 1px solid #434b5c; border-radius: 12px; background: #191e29; }
+.finder-meta p { margin: 0 0 8px; }
+.finder-meta p:first-child { color: #d4bcff; font-weight: 800; }
+.finder-meta a { color: #baa0ed; font-size: .78rem; }
+.finder-question { margin: 13px 0; padding: 12px; border: 1px solid #8e77b4; border-radius: 12px; background: #352c47; }
+.finder-question .toolbar { margin-bottom: 0; }
+.finder-progress { margin: 10px 0 0 !important; color: #c4cede !important; }
+@media (max-width: 400px) { .finder-row { grid-template-columns: 1fr; } }
+.profile-proof { flex: none; margin: 0 4px 5px; color: #b4a8cb; font-size: .62rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.key.confirmed { border-color: #71c89b; box-shadow: 0 0 0 1px #71c89b55, 0 3px 0 #12161e; }

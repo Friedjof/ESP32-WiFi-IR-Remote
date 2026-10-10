@@ -49,6 +49,8 @@ void IrReceiver::loop() {
     candidate_["protocol"] = protocol;
     candidate_["code"] = code;
     candidate_["bits"] = results_.bits;
+    candidate_["frequency"] = (protocol == "RC5" || protocol == "RC6") ? 36000 :
+                              (protocol == "SONY" ? 40000 : 38000);
   } else {
     uint16_t length = getCorrectedRawLength(&results_);
     if (length == 0 || length > MAX_RAW_TIMINGS) { state_ = "signal_too_long"; active_ = false; receiver_.resume(); return; }
@@ -74,5 +76,8 @@ bool IrReceiver::commit(JsonDocument& config, String& error) {
   target.clear();
   target.set(candidate_.as<JsonVariantConst>());
   target.remove("detected_protocol");
+  JsonArray confirmed = config["origin"]["confirmed_commands"].as<JsonArray>();
+  for (int index = static_cast<int>(confirmed.size()) - 1; index >= 0; --index)
+    if (confirmed[index].as<String>() == command_) confirmed.remove(index);
   return true;
 }

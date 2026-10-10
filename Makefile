@@ -29,7 +29,7 @@ endif
 
 all: build
 
-build: web-headers profile-headers
+build: web-headers profile-headers candidate-header
 	$(PLATFORMIO) run --environment $(BOARD)
 
 web-headers:
@@ -37,6 +37,9 @@ web-headers:
 
 profile-headers:
 	$(PYTHON) scripts/profiles-to-header.py data/profiles -o include/generated/default_profiles.h
+
+candidate-header:
+	$(PYTHON) scripts/candidates-to-header.py
 
 flash: build
 	$(PLATFORMIO) run --target upload --environment $(BOARD) $(UPLOAD_FLAG)
@@ -46,7 +49,7 @@ monitor:
 
 run: flash monitor
 
-test:
+test: web-headers profile-headers candidate-header
 	$(PYTHON) -m unittest discover -s test -v
 	node --check data/app.js
 
