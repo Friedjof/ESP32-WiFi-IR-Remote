@@ -159,6 +159,9 @@ function renderRemote() {
     for (const group of page.groups) {
       const wrapper = document.createElement('div');
       wrapper.className = 'button-group';
+      if (group.buttons.length && group.buttons.every(spec => /^digit_[0-9]$/.test(spec.command))) {
+        wrapper.classList.add('number-pad-group');
+      }
       const heading = document.createElement('h2');
       heading.className = 'group-label';
       heading.textContent = group.label;

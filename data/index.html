@@ -54,11 +54,10 @@
         <div id="finder-question" class="finder-question" hidden><strong>Did the TV react?</strong><div class="toolbar"><button id="finder-yes" class="primary" type="button">Yes</button><button id="finder-no" type="button">No</button></div></div>
         <p id="finder-progress" class="finder-progress"></p>
       </div>
-      <div class="card"><h2>Import a Flipper remote</h2><p>Import a local <code>.ir</code> file with NEC, NECext, Samsung32, Sony SIRC/SIRC15, RC5, RC6 or RAW signals. Unsupported protocols produce an error. The file becomes a separate saved remote.</p>
+      <div class="card"><h2><a href="https://github.com/Lucaslhm/Flipper-IRDB" target="_blank" rel="noopener noreferrer">Import a Flipper remote</a></h2><p>Download a <code>.ir</code> file from Flipper-IRDB, then import it here. NEC, NECext, Samsung32, Sony SIRC/SIRC15, RC5, RC6 and RAW signals are supported. The file becomes a separate saved remote.</p>
         <label for="flipper-name">Remote name</label><input id="flipper-name" maxlength="80" placeholder="e.g. Toshiba CT-8543">
-        <label class="file-button">Choose .ir file<input id="flipper-file" type="file" accept=".ir,text/plain"></label>
+        <div class="import-actions"><input id="flipper-file" class="file-input" type="file" accept=".ir,text/plain"><label for="flipper-file" class="file-button">Choose .ir file</label><button id="flipper-import" class="primary" type="button">Import remote</button></div>
         <p id="flipper-selected" class="finder-progress">No file selected.</p>
-        <button id="flipper-import" class="primary" type="button">Import remote</button>
       </div>
     </section>
     <section id="codes" class="panel" aria-label="Remote profiles and IR codes">
