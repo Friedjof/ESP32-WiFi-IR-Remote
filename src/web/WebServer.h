@@ -44,5 +44,6 @@ class RemoteWebServer {
   void candidateFeedback(const String& id);
   void candidateActivate(const String& id);
   void importFlipper();
+  void arrangeFlipper();
   void notFound();
 };

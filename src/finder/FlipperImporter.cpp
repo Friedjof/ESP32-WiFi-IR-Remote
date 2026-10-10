@@ -1,4 +1,5 @@
 #include "FlipperImporter.h"
+#include "FlipperButtonLayout.h"
 #include "storage/ConfigStorage.h"
 #include "Config.h"
 
@@ -30,28 +31,6 @@ bool hexBytes(const String& input, uint32_t& value) {
   value = n[0] | (n[1] << 8) | (n[2] << 16) | (n[3] << 24);
   return true;
 }
-String keyFor(const String& label) {
-  String lower = label;
-  lower.toLowerCase();
-  if (lower == "vol_up" || lower == "vol+" || lower == "volume_up" || lower == "vol_p") return "volume_up";
-  if (lower == "vol_down" || lower == "vol_dn" || lower == "vol-" || lower == "volume_down") return "volume_down";
-  if (lower == "chnl_next" || lower == "ch_next" || lower == "channel_up") return "channel_up";
-  if (lower == "chnl_prev" || lower == "ch_prev" || lower == "channel_down") return "channel_down";
-  if (lower == "return" || lower == "back") return "back";
-  if (lower == "enter" || lower == "select") return "ok";
-  if (lower == "source") return "input";
-  if (lower == "fav") return "favorite";
-  if (lower.length() == 1 && lower[0] >= '0' && lower[0] <= '9') return "digit_" + lower;
-  String result;
-  for (char c : lower) {
-    if ((c >= 'a' && c <= 'z') || (c >= '0' && c <= '9')) result += c;
-    else if (result.length() && result[result.length() - 1] != '_') result += '_';
-  }
-  while (result.endsWith("_")) result.remove(result.length() - 1);
-  if (result.length() > 28) result.remove(28);
-  if (result.isEmpty() || !(result[0] >= 'a' && result[0] <= 'z')) result = "key_" + result;
-  return result;
-}
 bool parseTimings(const String& value, JsonArray output, String& error) {
   uint32_t total = 0;
   const char* cursor = value.c_str();
@@ -76,7 +55,7 @@ bool addSignal(JsonDocument& target, const String& label, const String& type,
                const String& frequency, const String& duty, const String& timings,
                String& error) {
   if (label.isEmpty() || label.length() > 64) { error = "Signal needs a short name"; return false; }
-  String key = keyFor(label);
+  String key = FlipperButtonLayout::commandKey(label);
   if (!ConfigStorage::validName(key)) { error = "Invalid signal name"; return false; }
   JsonObject commands = target["commands"].as<JsonObject>();
   if (commands[key].is<JsonObject>()) { error = "Duplicate signal name after normalization: " + key; return false; }
@@ -145,26 +124,6 @@ bool addSignal(JsonDocument& target, const String& label, const String& type,
   } else {
     error = "Signal type must be parsed or raw"; return false;
   }
-  size_t index = commands.size() - 1;
-  size_t pageNumber = index / 24;
-  if (index % 24 == 0) {
-    JsonObject page = target["pages"].as<JsonArray>().add<JsonObject>();
-    page["id"] = String("page_") + (pageNumber + 1);
-    page["label"] = pageNumber ? String("Keys ") + (pageNumber + 1) : "Remote";
-    page["groups"].to<JsonArray>();
-  }
-  JsonObject page = target["pages"][pageNumber].as<JsonObject>();
-  if (index % 12 == 0) {
-    JsonObject group = page["groups"].as<JsonArray>().add<JsonObject>();
-    group["label"] = index ? "MORE KEYS" : "KEYS";
-    group["columns"] = 3;
-    group["buttons"].to<JsonArray>();
-  }
-  JsonArray groups = page["groups"].as<JsonArray>();
-  JsonObject button = groups[groups.size() - 1]["buttons"].as<JsonArray>().add<JsonObject>();
-  button["command"] = key;
-  button["label"] = label.length() > 32 ? label.substring(0, 32) : label;
-  button["repeat"] = key == "volume_up" || key == "volume_down" || key == "channel_up" || key == "channel_down" || key == "up" || key == "down" || key == "left" || key == "right";
   return true;
 }
 }
@@ -217,6 +176,7 @@ bool FlipperImporter::parse(const String& content, const String& id, const Strin
   if (!header || !version) { error = "Expected Flipper IR signals file, version 1"; return false; }
   if (!flush()) return false;
   if (!output["commands"].as<JsonObject>().size()) { error = "No IR signals found"; return false; }
+  if (!FlipperButtonLayout::arrange(output, error)) return false;
   if (measureJson(output) > MAX_CONFIG_BYTES) { error = "Converted profile is too large"; return false; }
   return true;
 }

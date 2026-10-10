@@ -2,6 +2,7 @@
 #include <WiFi.h>
 #include "generated/web_files.h"
 #include "finder/FlipperImporter.h"
+#include "finder/FlipperButtonLayout.h"
 
 bool RemoteWebServer::authorize() {
   IPAddress remote = server_.client().remoteIP();
@@ -115,6 +116,7 @@ void RemoteWebServer::begin() {
     JsonDocument doc; candidates_.list(doc); sendJson(200, doc);
   });
   server_.on("/api/import/flipper", HTTP_POST, [this]() { if (authorize()) importFlipper(); });
+  server_.on("/api/config/auto-layout", HTTP_POST, [this]() { if (authorize()) arrangeFlipper(); });
   server_.on("/api/remotes", HTTP_POST, [this]() { if (authorize()) createRemote(); });
   server_.on("/api/remotes/active", HTTP_POST, [this]() { if (authorize()) selectRemote(); });
   server_.on("/api/config", HTTP_GET, [this]() { if (authorize()) getConfig(); });
@@ -360,6 +362,24 @@ void RemoteWebServer::importFlipper() {
   doc["success"] = true; doc["active"] = config_.activeId();
   doc["commands"] = converted["commands"].as<JsonObject>().size();
   sendJson(201, doc);
+}
+
+void RemoteWebServer::arrangeFlipper() {
+  if (config_.data()["origin"]["format"].as<String>() != "Flipper IR") {
+    sendError(409, "Auto-layout is available for Flipper imports only"); return;
+  }
+  JsonDocument updated;
+  updated.set(config_.data().as<JsonVariantConst>());
+  String error;
+  if (!FlipperButtonLayout::arrange(updated, error)) { sendError(400, error); return; }
+  String json;
+  serializeJson(updated, json);
+  if (!config_.replace(json, error)) { sendError(400, error); return; }
+  JsonDocument doc;
+  doc["success"] = true;
+  doc["pages"] = updated["pages"].as<JsonArray>().size();
+  doc["commands"] = updated["commands"].as<JsonObject>().size();
+  sendJson(200, doc);
 }
 
 void RemoteWebServer::notFound() {

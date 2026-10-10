@@ -37,6 +37,21 @@ The Finder only allows one manually selected volume, mute, navigation, home/back
 
 The browser can import a Flipper `.ir` file. The ESP32 parses `parsed` NEC, NECext, Samsung32, Sony SIRC/SIRC15, RC5 and RC6 mode 0 and `raw` signals, preserving Flipper address, command, original name, frequency and RAW duty cycle metadata. Unsupported protocols, duplicate normalized key names, malformed lines and signals exceeding 300 timings or 300 ms fail with an explicit error. A file creates a new saved remote; it never silently overwrites the active one. The [official Flipper format](https://github.com/flipperdevices/flipperzero-firmware/blob/dev/documentation/file_formats/InfraredFileFormats.md) is the format reference. LIRC `.conf`, IRDB CSV, Pronto and Broadlink are **not yet imported**; a converted Flipper `.ir` or validated profile JSON can be used instead. The repository has no online catalog or runtime Internet download: import a file from your phone, then use it fully offline.
 
+### Button names and layout
+
+The official `.ir` format stores a free-form `name` for each signal; it contains no screen position or button category. The [Flipper Universal Remotes guide](https://github.com/flipperdevices/flipperzero-firmware/blob/dev/documentation/UniversalRemotes.md) defines the TV library names `Power`, `Mute`, `Vol_up`, `Vol_dn`, `Ch_next`, and `Ch_prev`. [Flipper-IRDB's naming guide](https://github.com/Lucaslhm/Flipper-IRDB#naming-scheme) recommends additional names for navigation and media controls. The importer uses these conventions as layout hints:
+
+| Source names | Display and placement |
+|---|---|
+| `Vol_up`, `Vol_dn` and common volume variants | `Vol +`, `Vol -` in Volume; hold to repeat |
+| `Ch_next`, `Ch_prev` and common channel variants | `CH +`, `CH -` in Channel; hold to repeat |
+| `Up`, `Down`, `Left`, `Right`, `Ok` / `Enter` | Direction pad with OK in the centre |
+| `Power`, `Input` / `Source`, `Mute`, `Home`, `Back` / `Return` | Main, Volume and System groups |
+| `Play`, `Pause`, `Stop`, `Next`, `Prev` | Mute, Play, Pause and Stop sit below the TV direction pad when available; extra media controls go to More. Audio-only profiles keep media on Remote. `Next` and `Prev` mean tracks, not channels. |
+| `0`–`9`, `Red`, `Green`, `Yellow`, `Blue` | Number pad and colour keys on More |
+
+TV-like files with direction, volume and channel keys use the familiar Power/Source, system, side rocker and direction pad arrangement. Other names remain visible in an Other Keys group with their original `source_name` stored alongside the IR data. The mapping does not assert that an imported signal works on a particular device. For an already imported Flipper profile, select it and use **Settings → Arrange imported buttons**. That rebuilds only its button layout from saved names; its command identifiers, protocols and IR codes stay intact. Download a backup first if you manually customized the layout.
+
 An optional 3.3 V IR receiver can capture a real remote. The default XIAO build disables RX; consult [IR learning](ir-learning.md) before enabling it. An unknown decoded protocol falls back to RAW timing capture. A demodulating receiver does not measure the original carrier precisely, so check the stored frequency when using RAW.
 
 ## Possible TV control over home WiFi

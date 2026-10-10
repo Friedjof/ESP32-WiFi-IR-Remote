@@ -65,6 +65,8 @@
       <div class="card"><h2>Remote profiles</h2><p>Each remote has its own saved JSON file. Select a remote above to use it. Clone the current layout to make a new remote with empty IR codes.</p>
         <label for="new-name">New remote name</label><input id="new-name" maxlength="80" placeholder="e.g. Living room receiver">
         <div class="toolbar"><button id="create-profile" class="primary" type="button">Clone layout</button><button id="delete-profile" class="danger" type="button">Delete selected remote</button></div>
+        <p>Already imported a Flipper file? Arrange its known keys into a remote layout. IR signals stay the same; download a profile backup first if you edited its button layout by hand.</p>
+        <button id="arrange-flipper" type="button" disabled>Arrange imported buttons</button>
       </div>
       <div class="card"><h2>Edit one IR key</h2><p>Update a signal without editing the whole JSON file. Leave the code or RAW timings empty to mark this key unconfigured.</p>
         <label for="key-edit-command">Key</label><select id="key-edit-command"></select>

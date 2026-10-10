@@ -42,7 +42,7 @@ function notice(message, success = false) {
 
 async function sendCommand(name, held = false) {
   if (!commands[name]?.configured) {
-    notice(`${prettyKey(name)} has no IR code in ${profile?.device || 'this remote'}. Choose a coded remote or open Finder.`);
+    notice(`${remoteKeyLabel(name)} has no IR code in ${profile?.device || 'this remote'}. Choose a coded remote or open Finder.`);
     return;
   }
   try {
@@ -144,6 +144,7 @@ function renderRemote() {
     section.setAttribute('aria-label', page.label);
     const shell = document.createElement('div');
     shell.className = 'remote-shell';
+    if (page.layout === 'tv') shell.classList.add('tv-layout');
     if (!Object.values(commands).some(command => command.configured)) {
       const setup = document.createElement('div');
       setup.className = 'remote-setup';
@@ -159,6 +160,11 @@ function renderRemote() {
     for (const group of page.groups) {
       const wrapper = document.createElement('div');
       wrapper.className = 'button-group';
+      const groupName = group.label.toLowerCase();
+      if (['main','volume','channel','navigation','system','media','brightness'].includes(groupName)) {
+        wrapper.classList.add(`group-${groupName}`);
+      }
+      if (group.buttons.some(spec => spec.column && spec.row)) wrapper.classList.add('navigation-group');
       if (group.buttons.length && group.buttons.every(spec => /^digit_[0-9]$/.test(spec.command))) {
         wrapper.classList.add('number-pad-group');
       }
@@ -204,6 +210,7 @@ async function refreshProfile() {
     ]);
     profile = config;
     commands = commandList.commands || {};
+    $('#arrange-flipper').disabled = profile.origin?.format !== 'Flipper IR';
     repeatInterval = commandList.repeat_interval_ms || 250;
     $('#target').textContent = profile.device;
     const confirmed = profile.origin?.confirmed_commands || [];
@@ -226,7 +233,7 @@ async function refreshProfile() {
     learnSelect.replaceChildren(...Object.keys(commands).sort().map(name => {
       const option = document.createElement('option');
       option.value = name;
-      option.textContent = name.replaceAll('_', ' ');
+      option.textContent = remoteKeyLabel(name);
       return option;
     }));
     if (commands[previous]) learnSelect.value = previous;
@@ -234,7 +241,7 @@ async function refreshProfile() {
     const previousEdit = editSelect.value;
     editSelect.replaceChildren(...Object.keys(commands).sort().map(name => {
       const option = document.createElement('option');
-      option.value = name; option.textContent = prettyKey(name);
+      option.value = name; option.textContent = remoteKeyLabel(name);
       return option;
     }));
     if (commands[previousEdit]) editSelect.value = previousEdit;
@@ -265,6 +272,16 @@ async function loadStatus() {
 }
 
 function prettyKey(name) { return name.replaceAll('_', ' ').replace(/\b\w/g, letter => letter.toUpperCase()); }
+
+function remoteKeyLabel(name) {
+  for (const page of profile?.pages || []) {
+    for (const group of page.groups) {
+      const button = group.buttons.find(item => item.command === name);
+      if (button) return button.label;
+    }
+  }
+  return prettyKey(name);
+}
 
 function renderFinder() {
   const brand = $('#finder-brand').value;
@@ -385,6 +402,14 @@ $('#flipper-import').addEventListener('click', async () => {
   } catch (error) { notice(`Flipper import failed: ${error.message}`); }
 });
 
+$('#arrange-flipper').addEventListener('click', async () => {
+  try {
+    await api('/api/config/auto-layout', {method:'POST'});
+    await refreshProfile();
+    notice('Buttons arranged. IR signals are unchanged.', true);
+  } catch (error) { notice(`Could not arrange buttons: ${error.message}`); }
+});
+
 async function loadNetwork() {
   const [network, security] = await Promise.all([api('/api/network'), api('/api/security')]);
   $('#wifi-ssid').value = network.station.ssid || '';
@@ -468,11 +493,13 @@ $('#key-edit-save').addEventListener('click', async () => {
     command.bits = bits;
   }
   const updated = JSON.parse(JSON.stringify(profile));
+  const sourceName = updated.commands[name].source_name;
   updated.commands[name] = command;
+  if (sourceName) updated.commands[name].source_name = sourceName;
   try {
     await api('/api/config', {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(updated)});
     await refreshProfile();
-    notice(`${prettyKey(name)} saved.`, true);
+    notice(`${remoteKeyLabel(name)} saved.`, true);
   } catch (error) { notice(`Key not saved: ${error.message}`); }
 });
 

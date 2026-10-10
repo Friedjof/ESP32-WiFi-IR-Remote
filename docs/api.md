@@ -17,6 +17,7 @@ State-changing routes are open by default to match the open AP setup. **Settings
 | DELETE | `/api/candidates/{id}/feedback` | Clear all saved test feedback for one candidate |
 | POST | `/api/candidates/{id}/activate` | Create/select an editable remote from a candidate after two different positive results |
 | POST | `/api/import/flipper` | Import `{ "id": "my_remote", "device": "My Remote", "content": "Filetype: IR signals file\\n..." }` |
+| POST | `/api/config/auto-layout` | Rebuild button pages for the active Flipper import from saved `source_name` values; preserves its IR commands |
 | GET / POST | `/api/remotes` | List saved profiles, including `configured_commands` for each / create and activate a complete JSON profile |
 | POST | `/api/remotes/active` | Select with `{ "id": "toshiba_tv" }` |
 | DELETE | `/api/remotes/{id}` | Delete a profile; at least one must remain |
@@ -67,6 +68,6 @@ Each saved remote is `/remotes/{id}.json` in LittleFS. `id` uses lowercase lette
 
 Pages contain groups, and groups contain buttons that reference command names. A profile may have 1–6 pages, 1–12 groups per page, up to 96 commands and visible buttons, and at most 300 RAW timings / 300 ms per command. The device holds up to eight profiles. Profile updates use a temporary file and backup. The active ID is stored in NVS; Finder feedback uses `/candidate_feedback.json`. A regular firmware upload preserves both. A full flash erase, changed partition table or explicit `uploadfs` can remove LittleFS contents. Download each profile with `/api/config/export` before such operations.
 
-The Flipper importer accepts version-1 `.ir` parsed NEC, NECext, RC5 and RC6 mode 0, plus RAW. It preserves original signal names and parsed address/command metadata. Unsupported protocols fail rather than being sent with a guessed encoder. See [Finder and source notes](code-finder.md) for conversion details. LIRC, IRDB CSV, Pronto and Broadlink are not currently parsed.
+The Flipper importer accepts version-1 `.ir` parsed NEC, NECext, Samsung32, Sony SIRC/SIRC15, RC5 and RC6 mode 0, plus RAW. It preserves original signal names and parsed address/command metadata. Known signal names are mapped to readable labels and remote-style groups; unknown names stay visible under Other Keys. `POST /api/config/auto-layout` returns `409` for non-Flipper profiles. Unsupported protocols fail rather than being sent with a guessed encoder. See [Finder and source notes](code-finder.md) for conversion and layout details. LIRC, IRDB CSV, Pronto and Broadlink are not currently parsed.
 
 The optional receive endpoints require a compatible 3.3 V IR receiver and a build with `IR_ENABLE_RX=1`. The default XIAO build ships with RX disabled. A captured unknown protocol is stored as RAW at the configured default frequency, which may need correction after testing.
