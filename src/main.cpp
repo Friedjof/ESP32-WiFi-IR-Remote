@@ -6,14 +6,16 @@
 #include "ir/IrReceiver.h"
 #include "ota/OtaManager.h"
 #include "finder/CandidateCatalog.h"
+#include "diagnostics/DiagnosticLog.h"
 
+DiagnosticLog diagnostics;
 ConfigStorage config;
 CandidateCatalog candidates;
-NetworkManager network;
-IrTransmitter transmitter;
+NetworkManager network(diagnostics);
+IrTransmitter transmitter(diagnostics);
 IrReceiver receiver;
-OtaManager ota;
-RemoteWebServer web(config, candidates, network, transmitter, receiver);
+OtaManager ota(diagnostics);
+RemoteWebServer web(config, candidates, network, transmitter, receiver, diagnostics);
 
 void setup() {
   Serial.begin(115200);

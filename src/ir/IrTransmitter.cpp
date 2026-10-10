@@ -1,6 +1,20 @@
 #include "IrTransmitter.h"
 #include <ir_NEC.h>
 
+namespace {
+const char* protocolName(IrProtocol protocol) {
+  switch (protocol) {
+    case IrProtocol::Nec: return "NEC";
+    case IrProtocol::Samsung: return "Samsung";
+    case IrProtocol::Sony: return "Sony";
+    case IrProtocol::Rc5: return "RC5";
+    case IrProtocol::Rc6: return "RC6";
+    case IrProtocol::Raw: return "RAW";
+  }
+  return "unknown";
+}
+}  // namespace
+
 bool IrTransmitter::enqueue(const IrJob& job) {
   if (count_ == IR_QUEUE_SIZE) return false;
   queue_[tail_] = job;
@@ -14,6 +28,7 @@ void IrTransmitter::loop() {
   sending_ = true;
   IrJob& job = queue_[head_];
   Serial.printf("IR sending %s\n", job.name);
+  uint32_t start = millis();
   switch (job.protocol) {
     case IrProtocol::Nec:
       if (job.frequency == 38000) sender_.sendNEC(job.code, job.bits);
@@ -44,6 +59,16 @@ void IrTransmitter::loop() {
       break;
     case IrProtocol::Raw: sender_.sendRawWithDuty(job.timings, job.length, job.frequency, job.dutyCycle); break;
   }
+  if (job.protocol == IrProtocol::Raw)
+    log_.add("ir", "Sent %s RAW %u timings %lu Hz in %lu ms", job.name,
+             static_cast<unsigned>(job.length), static_cast<unsigned long>(job.frequency),
+             static_cast<unsigned long>(millis() - start));
+  else
+    log_.add("ir", "Sent %s %s 0x%llX/%u %lu Hz %s in %lu ms", job.name,
+             protocolName(job.protocol), static_cast<unsigned long long>(job.code),
+             static_cast<unsigned>(job.bits),
+             static_cast<unsigned long>(job.frequency), job.held ? "held" : "tap",
+             static_cast<unsigned long>(millis() - start));
   head_ = (head_ + 1) % IR_QUEUE_SIZE;
   --count_;
   sending_ = false;

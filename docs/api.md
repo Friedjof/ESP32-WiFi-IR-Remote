@@ -9,6 +9,7 @@ State-changing routes are open by default to match the open AP setup. **Settings
 | Method | Path | Purpose |
 |---|---|---|
 | GET | `/api/status` | Firmware, active profile, AP/STA connection, IR queue, RX, uptime, heap |
+| GET | `/api/logs` | Last 48 RAM-only WiFi, IR and OTA events, oldest first; no credentials or OTA password |
 | GET / PUT | `/api/network` | Read AP/STA state; set `{ "ssid": "...", "password": "..." }` for 2.4 GHz home WiFi; empty SSID and password forget it |
 | GET / PUT | `/api/security` | Read `admin_password_set`; set `{ "password": "..." }`, empty password removes authentication |
 | GET | `/api/candidates` | Curated Finder catalog plus saved per-command Yes/No feedback |
@@ -61,6 +62,8 @@ Accepted command response:
 ```
 
 Unknown commands return `404`; known but unconfigured commands return `409`; invalid import/test data returns `400`; more than one accepted IR command in 120 ms returns `429`; a full four-item queue returns `503`. Error bodies have `{"success":false,"error":"..."}`. IR transmission is serial, never overlapping. Finder tests allow only manually selected volume, mute, navigation, home/back, input, channel, menu and exit commands. No automatic scan exists.
+
+`GET /api/logs` returns `{ "uptime_ms": ..., "capacity": 48, "events": [...] }`. Each event has an incrementing `id`, `uptime_ms`, `category` and `message`. IR events include the command name, protocol, encoded value, bit count, carrier and elapsed transmission time. The history is held in RAM and clears on reboot. It records what the ESP32 sent, not what the TV received. `/api/status` also reports the home-WiFi IP and the password-protected OTA port (3232). See [Remote diagnosis and OTA](remote-diagnostics.md).
 
 ## Profiles and persistence
 

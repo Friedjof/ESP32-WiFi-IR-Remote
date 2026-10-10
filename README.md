@@ -32,7 +32,7 @@ These resistor values are a starting point; check the actual LED's forward volta
 - REST API restricted to local AP or home-WiFi clients, optional HTTP Basic admin password for changes, a four-command IR queue and rate limiting.
 - NEC, Samsung32, Sony, RC5, RC6 and RAW send modes, with carrier frequency per command or profile.
 - Optional IR receiver and browser-assisted learning, including RAW fallback (disabled in the default XIAO build).
-- Atomic profile saves with `.bak` fallback, protected local ArduinoOTA and serial diagnostics.
+- Atomic profile saves with `.bak` fallback, password-protected local ArduinoOTA, and live WiFi/IR/OTA diagnostics in the browser.
 
 ## Build and connect
 
@@ -41,6 +41,8 @@ These resistor values are a starting point; check the actual LED's forward volta
 3. Connect your phone to the open `TV-Remote-XXXX` WiFi network. Its suffix comes from the board's MAC address, so a different board has a different SSID. The sign-in window should open the remote automatically. Otherwise visit `http://192.168.4.1/`. If the phone says the network has no internet, choose to stay connected.
 4. Select a bundled Samsung, LG or Sony remote at the top to try its sourced codes. The default Toshiba template has no IR codes: use **Finder** to test candidates one key at a time, save Yes/No results, then activate a candidate after two working keys. **Settings** lets you import a Flipper `.ir` file, edit/export profiles and optionally join home WiFi. New Flipper imports arrange familiar button names into a remote layout; existing imports can use **Arrange imported buttons** in Settings. An unconfigured command emits no IR.
 5. Run `make monitor 0` at 115200 baud to see AP diagnostics and the per-device OTA password. Press reset to repeat the boot log.
+
+To use the remote while the XIAO is powered near the TV, join it to your 2.4 GHz home WiFi in **Settings** before unplugging USB. Confirm the home-network IP in **Status**, save the OTA password from the serial monitor, then open `http://tv-remote.local/` or that IP from your phone. **Status → Live device log** shows sent IR values and connection events. For firmware updates from a laptop, run `make ota OTA_HOST=STATION_IP` with `OTA_PASSWORD` set in the environment; see [remote diagnosis and OTA](docs/remote-diagnostics.md) for the password-safe terminal commands and the AP fallback.
 
 You can use the remote in a normal browser. While connected to the ESP32 AP, enter **`http://192.168.4.1/`** explicitly (including `http://`, since the ESP32 does not serve HTTPS). If it loads in the sign-in window but not in the browser, check that the phone stayed on `TV-Remote-XXXX` despite the no-internet warning; temporarily disable mobile data if it routes the browser elsewhere. The phone should receive a `192.168.4.x` address with gateway `192.168.4.1`. From your home WiFi, use the ESP32's station IP or `http://tv-remote.local/` after configuring that network in Settings; the AP address is only reachable from the AP network.
 
@@ -96,5 +98,6 @@ The AP remains active when home WiFi is configured. Anyone who joins this open W
 - [HTTP API](docs/api.md)
 - [IR learning](docs/ir-learning.md)
 - [Hardware](docs/hardware.md)
+- [Remote diagnosis and OTA](docs/remote-diagnostics.md)
 
 Tested build stack: PlatformIO Espressif 32 7.0.0, Arduino-ESP32 2.0.17, IRremoteESP8266 2.9.0 and ArduinoJson 7.4.3. Actual device control requires verified IR codes and a working LED circuit.

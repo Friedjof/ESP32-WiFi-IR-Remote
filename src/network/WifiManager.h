@@ -5,9 +5,11 @@
 #include <ESPmDNS.h>
 #include <Preferences.h>
 #include "Config.h"
+#include "diagnostics/DiagnosticLog.h"
 
 class NetworkManager {
  public:
+  explicit NetworkManager(DiagnosticLog& log) : log_(log) {}
   void begin();
   void loop();
   bool apActive() const { return apActive_; }
@@ -21,6 +23,7 @@ class NetworkManager {
   bool configureAdmin(const String& password, String& error);
 
  private:
+  DiagnosticLog& log_;
   Preferences prefs_;
   DNSServer dns_;
   String otaPassword_;
@@ -31,6 +34,7 @@ class NetworkManager {
   bool apActive_ = false;
   bool serialWasConnected_ = false;
   bool mdnsStarted_ = false;
+  bool stationWasConnected_ = false;
   uint32_t lastStartAttempt_ = 0;
   uint32_t lastStationAttempt_ = 0;
   String secret(const char* key, size_t length);

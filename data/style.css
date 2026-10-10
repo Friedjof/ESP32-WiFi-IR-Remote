@@ -108,6 +108,7 @@ body.page-scroll .tabs { position: fixed; z-index: 9; left: 50%; bottom: max(8px
 .card button.primary { background: #735c9c; border-color: #9e85c5; }.card button.danger { color: #ffc3ca; border-color: #8d535e; }.card button:disabled { opacity: .42; cursor: default; }
 .toolbar { display: flex; gap: 9px; flex-wrap: wrap; margin: 11px 0; }.file-button { display: inline-block !important; margin: 0 !important; }.file-button input { display: none; }
 .result { max-height: 330px; overflow: auto; overflow-wrap: anywhere; white-space: pre-wrap; padding: 13px; border: 1px solid #343b4b; border-radius: 11px; background: #10131a; color: #ced5e0; font: .74rem/1.5 ui-monospace, monospace; }
+.event-log { max-height: min(55vh, 500px); }
 @media (max-width: 360px), (max-height: 620px) {
   .app { padding-left: 9px; padding-right: 9px; }
   .remote-shell { padding: 10px 12px 13px; border-radius: 24px; }

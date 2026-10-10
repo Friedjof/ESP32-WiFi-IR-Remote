@@ -95,7 +95,10 @@
         <p id="admin-state">Checking access…</p>
       </div>
     </section>
-    <section id="diagnostics" class="panel" aria-label="Diagnostics"><div class="card"><h2>Device status</h2><pre id="status-json" class="result">Connecting…</pre><div class="toolbar"><button id="refresh-status" type="button">Refresh</button><button id="restart" class="danger" type="button">Restart ESP32</button></div></div></section>
+    <section id="diagnostics" class="panel" aria-label="Diagnostics">
+      <div class="card"><h2>Live device log</h2><p id="lan-access">Checking home WiFi…</p><p>Recent WiFi, IR and OTA events stay in device memory until restart. The log shows which code was sent, but cannot confirm whether the TV received it. Save the OTA password from USB serial before moving the ESP32.</p><pre id="event-log" class="result event-log" role="log" aria-live="polite">Loading events…</pre><div class="toolbar"><button id="refresh-log" type="button">Refresh log</button></div></div>
+      <div class="card"><h2>Device status</h2><pre id="status-json" class="result">Connecting…</pre><div class="toolbar"><button id="refresh-status" type="button">Refresh</button><button id="restart" class="danger" type="button">Restart ESP32</button></div></div>
+    </section>
     <nav id="tabs" class="tabs" aria-label="Sections"></nav>
   </main>
 </body>

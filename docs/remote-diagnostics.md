@@ -1,0 +1,32 @@
+# Remote diagnosis and OTA
+
+The XIAO ESP32C3 can stay near the TV on USB power while the phone and laptop use home WiFi. Its open `TV-Remote-XXXX` access point remains active as a fallback. The default IR output is D10/GPIO10; moving the board does not change its pin or saved remote profile.
+
+## Prepare before unplugging USB
+
+1. Flash the current firmware once over USB with `make flash 0`. Open `http://192.168.4.1/` while connected to the ESP32 access point and confirm the firmware version in **Status**.
+2. In **Settings → Home WiFi and access**, enter the 2.4 GHz home-network SSID and password. These stay in the ESP32's NVS and are not part of the repository. **Status** must show `station_connected: true` and a `station_ip`. Open `http://tv-remote.local/` or `http://STATION_IP/` from a device on the same home network before moving the XIAO. Use the IP if mDNS does not resolve.
+3. Connect USB and run `make monitor 0` at 115200 baud. Note the individual **OTA password** printed at startup or when the serial monitor connects. Keep it private. The OTA password is separate from the optional web-admin password and persists across normal firmware updates. If it is lost, reconnect USB to read it again.
+4. Download a backup of the active remote from **Settings → Download profile**. A normal firmware upload preserves profiles, but a full flash erase or `uploadfs` can remove them.
+5. Supply the board and IR circuit with suitable power near the TV. Keep the ESP32 and LED supply grounds connected and the external WiFi antenna attached.
+
+## Watch IR tests remotely
+
+Open the remote at the home-WiFi address and select **Status → Live device log**. It refreshes while Status is visible. Each IR event lists the sent command, protocol, encoded code, bit count, carrier frequency, tap/held state and time spent transmitting. The log also shows home-WiFi connection and OTA events. `GET /api/logs` provides the same data to scripts. It retains only the latest 48 events in RAM and resets when the ESP32 restarts.
+
+For a controlled TV test, tap one key briefly, wait about two seconds, and compare the TV's response with the new `Sent ...` event. Holding a repeatable key for more than 440 ms starts repeated HTTP requests. A `Sent` event confirms software transmission only; an IR receiver or oscilloscope is needed to inspect the emitted signal, and the TV response must still be observed directly.
+
+## Update firmware over home WiFi
+
+The laptop and ESP32 must be on the same reachable local network. ArduinoOTA listens on port 3232 and requires the per-device password. In a Bash terminal, enter the password without placing it in shell history:
+
+```sh
+read -rsp 'OTA password: ' OTA_PASSWORD; echo
+export OTA_PASSWORD
+make ota OTA_HOST=192.168.1.123
+unset OTA_PASSWORD
+```
+
+Replace the example address with the `station_ip` shown in Status. `OTA_HOST=tv-remote.local` also works when mDNS resolves. The Makefile builds the XIAO ESP32C3 firmware and uses PlatformIO's `espota` uploader; no credential is written to `platformio.ini`. Wait for the upload and restart, then reload **Status** and confirm the new firmware version. If the home router isolates wireless clients or a laptop firewall blocks the OTA callback, put the laptop on the ESP32 access point and run the same command with `OTA_HOST=192.168.4.1`.
+
+OTA changes the firmware partition only. It does not upload the LittleFS image or replace saved remote profiles. Keep USB access available for recovery if a firmware build stops joining WiFi or serving OTA.

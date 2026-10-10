@@ -38,6 +38,7 @@ bool NetworkManager::startAp() {
   }
   if (!started) {
     Serial.println("ERROR: Open WiFi AP did not start");
+    log_.add("wifi", "Access point failed to start");
     return false;
   }
   delay(100);
@@ -60,6 +61,7 @@ bool NetworkManager::startAp() {
     MDNS.enableArduino(3232, true);
   }
   Serial.printf("Captive DNS ready; mDNS: %s\n", mdnsStarted_ ? "ready" : "unavailable");
+  log_.add("wifi", "Access point ready at %s", WiFi.softAPIP().toString().c_str());
   printInfo();
   return true;
 }
@@ -71,6 +73,7 @@ void NetworkManager::begin() {
   stationPassword_ = prefs_.getString("sta_pass", "");
   adminPassword_ = prefs_.getString("admin", "");
   apName_ = "TV-Remote-" + String(static_cast<uint32_t>(ESP.getEfuseMac() & 0xffff), HEX);
+  log_.add("system", "Firmware %s started", FIRMWARE_VERSION);
   serialWasConnected_ = static_cast<bool>(Serial);
   WiFi.onEvent([](WiFiEvent_t event, WiFiEventInfo_t) {
     if (event == ARDUINO_EVENT_WIFI_AP_START) Serial.println("WiFi event: AP started");
@@ -91,6 +94,7 @@ void NetworkManager::connectStation() {
   WiFi.setAutoReconnect(true);
   WiFi.begin(stationSsid_.c_str(), stationPassword_.c_str());
   Serial.printf("Connecting to home WiFi: %s\n", stationSsid_.c_str());
+  log_.add("wifi", "Connecting to home WiFi");
 }
 
 bool NetworkManager::configureStation(const String& ssid, const String& password, String& error) {
@@ -103,6 +107,7 @@ bool NetworkManager::configureStation(const String& ssid, const String& password
     prefs_.remove("sta_ssid"); prefs_.remove("sta_pass");
     WiFi.disconnect(false, false);
     WiFi.mode(WIFI_AP);
+    log_.add("wifi", "Home WiFi configuration cleared");
     return true;
   }
   if (password.isEmpty() && ssid == stationSsid_) {
@@ -131,6 +136,13 @@ void NetworkManager::loop() {
   bool serialConnected = static_cast<bool>(Serial);
   if (serialConnected && !serialWasConnected_) printInfo();
   serialWasConnected_ = serialConnected;
+  bool connected = stationConnected();
+  if (connected != stationWasConnected_) {
+    stationWasConnected_ = connected;
+    if (connected) log_.add("wifi", "Home WiFi connected at %s (RSSI %d dBm)",
+                            WiFi.localIP().toString().c_str(), WiFi.RSSI());
+    else log_.add("wifi", "Home WiFi disconnected");
+  }
   if (apActive_) {
     dns_.processNextRequest();
   } else if (millis() - lastStartAttempt_ >= 10000) {

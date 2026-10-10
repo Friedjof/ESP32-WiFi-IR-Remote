@@ -5,11 +5,14 @@
 #include "ir/IrTransmitter.h"
 #include "ir/IrReceiver.h"
 #include "finder/CandidateCatalog.h"
+#include "diagnostics/DiagnosticLog.h"
 
 class RemoteWebServer {
  public:
-  RemoteWebServer(ConfigStorage& config, CandidateCatalog& candidates, NetworkManager& network, IrTransmitter& tx, IrReceiver& rx)
-    : config_(config), candidates_(candidates), network_(network), tx_(tx), rx_(rx), server_(80) {}
+  RemoteWebServer(ConfigStorage& config, CandidateCatalog& candidates, NetworkManager& network,
+                  IrTransmitter& tx, IrReceiver& rx, DiagnosticLog& log)
+    : config_(config), candidates_(candidates), network_(network), tx_(tx), rx_(rx),
+      log_(log), server_(80) {}
   void begin();
   void loop();
 
@@ -19,6 +22,7 @@ class RemoteWebServer {
   NetworkManager& network_;
   IrTransmitter& tx_;
   IrReceiver& rx_;
+  DiagnosticLog& log_;
   WebServer server_;
   uint32_t lastAccepted_ = 0;
   uint32_t restartAt_ = 0;

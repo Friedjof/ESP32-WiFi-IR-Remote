@@ -11,6 +11,7 @@ let learnTimer = null;
 let noticeTimer = null;
 let wasConnected = false;
 let refreshing = null;
+let logRefreshing = null;
 let finderCatalog = [];
 let finderFeedback = {};
 let lastFinderTest = null;
@@ -119,6 +120,7 @@ function activateTab(id) {
   document.querySelector(`[data-tab="${id}"]`)?.classList.add('active');
   document.body.classList.toggle('page-scroll', ['finder','codes','diagnostics'].includes(id));
   window.scrollTo(0, 0);
+  if (id === 'diagnostics') loadLogs();
 }
 
 function makeTab(id, label) {
@@ -255,6 +257,9 @@ async function loadStatus() {
   try {
     const data = await api('/api/status');
     $('#status-json').textContent = JSON.stringify(data, null, 2);
+    $('#lan-access').textContent = data.wifi.station_connected ?
+      `Home WiFi: http://${data.wifi.station_ip}/ · OTA port ${data.ota?.port || 3232}. The TV-Remote AP remains available.` :
+      'Home WiFi is disconnected. Connect it in Settings before moving the ESP32; the TV-Remote AP stays available.';
     $('#connection').classList.toggle('online', data.wifi.connected);
     $('#connection-text').textContent = data.wifi.connected ? 'Connected' : 'WiFi offline';
     if (data.wifi.connected && (!wasConnected || data.active_remote !== profile?.id)) {
@@ -267,8 +272,23 @@ async function loadStatus() {
     $('#connection').classList.remove('online');
     $('#connection-text').textContent = 'Offline';
     $('#status-json').textContent = error.message;
+    $('#lan-access').textContent = 'Device unreachable. Check WiFi and power.';
     if (lostConnection) notice(error.message);
   }
+}
+
+async function loadLogs() {
+  if (logRefreshing) return logRefreshing;
+  logRefreshing = (async () => {
+    try {
+      const data = await api('/api/logs');
+      const lines = data.events.map(event =>
+        `[${(event.uptime_ms / 1000).toFixed(1).padStart(7)}s] ${event.category.toUpperCase()}: ${event.message}`);
+      $('#event-log').textContent = lines.length ? lines.join('\n') : 'No events yet.';
+      $('#event-log').scrollTop = $('#event-log').scrollHeight;
+    } catch (error) { $('#event-log').textContent = error.message; }
+  })();
+  try { await logRefreshing; } finally { logRefreshing = null; }
 }
 
 function prettyKey(name) { return name.replaceAll('_', ' ').replace(/\b\w/g, letter => letter.toUpperCase()); }
@@ -585,7 +605,8 @@ $('#save-learn').addEventListener('click', async () => {
     notice('Learned code saved.', true);
   } catch (error) { notice(error.message); }
 });
-$('#refresh-status').addEventListener('click', loadStatus);
+$('#refresh-status').addEventListener('click', () => { loadStatus(); loadLogs(); });
+$('#refresh-log').addEventListener('click', loadLogs);
 $('#restart').addEventListener('click', async () => {
   try { await api('/api/restart', {method:'POST'}); notice('ESP32 is restarting. Reconnection can take a moment.', true); }
   catch (error) { notice(error.message); }
@@ -595,3 +616,4 @@ loadStatus();
 loadCandidates().catch(error => notice(`Finder unavailable: ${error.message}`));
 loadNetwork().catch(error => notice(`Network settings unavailable: ${error.message}`));
 setInterval(loadStatus, 10000);
+setInterval(() => { if ($('#diagnostics').classList.contains('active')) loadLogs(); }, 2000);

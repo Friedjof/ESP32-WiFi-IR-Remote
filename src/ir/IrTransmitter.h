@@ -1,6 +1,7 @@
 #pragma once
 #include <IRsend.h>
 #include "Types.h"
+#include "diagnostics/DiagnosticLog.h"
 
 class DutyIrSend : public IRsend {
  public:
@@ -17,14 +18,15 @@ class DutyIrSend : public IRsend {
 
 class IrTransmitter {
  public:
-  IrTransmitter() : sender_(IR_TX_PIN) {}
-  void begin() { sender_.begin(); }
+  explicit IrTransmitter(DiagnosticLog& log) : log_(log), sender_(IR_TX_PIN) {}
+  void begin() { sender_.begin(); log_.add("ir", "Transmitter ready on GPIO%u", static_cast<unsigned>(IR_TX_PIN)); }
   bool enqueue(const IrJob& job);
   void loop();
   uint8_t queued() const { return count_; }
   bool busy() const { return sending_; }
 
  private:
+  DiagnosticLog& log_;
   DutyIrSend sender_;
   IrJob queue_[IR_QUEUE_SIZE];
   uint8_t head_ = 0;

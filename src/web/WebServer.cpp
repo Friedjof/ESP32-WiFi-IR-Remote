@@ -69,6 +69,12 @@ void RemoteWebServer::begin() {
     server_.on(path, HTTP_GET, [this]() { redirectToRemote(); });
   }
   server_.on("/api/status", HTTP_GET, [this]() { if (authorize()) status(); });
+  server_.on("/api/logs", HTTP_GET, [this]() {
+    if (!authorize()) return;
+    JsonDocument doc;
+    log_.write(doc);
+    sendJson(200, doc);
+  });
   server_.on("/api/network", HTTP_GET, [this]() {
     if (!authorize()) return;
     JsonDocument doc;
@@ -148,6 +154,7 @@ void RemoteWebServer::status() {
   doc["active_remote"] = config_.activeId();
   doc["hostname"] = DEVICE_HOSTNAME;
   doc["firmware"] = FIRMWARE_VERSION;
+  doc["firmware_build"] = String(__DATE__) + " " + __TIME__;
   doc["wifi"]["connected"] = network_.apActive() || network_.stationConnected();
   doc["wifi"]["mode"] = network_.stationConfigured() ? "ap_sta" : "ap";
   doc["wifi"]["ssid"] = network_.apName();
@@ -166,6 +173,9 @@ void RemoteWebServer::status() {
   doc["receiver"]["enabled"] = rx_.enabled();
   doc["uptime_ms"] = millis();
   doc["free_heap"] = ESP.getFreeHeap();
+  doc["ota"]["enabled"] = true;
+  doc["ota"]["port"] = 3232;
+  doc["ota"]["password_protected"] = true;
   sendJson(200, doc);
 }
 
@@ -287,14 +297,26 @@ void RemoteWebServer::commitLearn() {
 }
 
 void RemoteWebServer::sendCommand(const String& name) {
-  if (!config_.hasCommand(name)) { sendError(404, "Unknown command"); return; }
+  if (!config_.hasCommand(name)) {
+    log_.add("ir", "Rejected unknown command %s", name.c_str());
+    sendError(404, "Unknown command"); return;
+  }
   IrJob job;
   String error;
-  if (!config_.makeJob(name, job, error)) { sendError(409, error); return; }
+  if (!config_.makeJob(name, job, error)) {
+    log_.add("ir", "Rejected %s: %s", name.c_str(), error.c_str());
+    sendError(409, error); return;
+  }
   job.held = server_.header("X-IR-Held") == "1";
   uint32_t now = millis();
-  if (lastAccepted_ && now - lastAccepted_ < 120) { sendError(429, "Command rate limit: wait 120 ms"); return; }
-  if (!tx_.enqueue(job)) { sendError(503, "IR queue is full"); return; }
+  if (lastAccepted_ && now - lastAccepted_ < 120) {
+    log_.add("ir", "Rejected %s: rate limit", name.c_str());
+    sendError(429, "Command rate limit: wait 120 ms"); return;
+  }
+  if (!tx_.enqueue(job)) {
+    log_.add("ir", "Rejected %s: queue full", name.c_str());
+    sendError(503, "IR queue is full"); return;
+  }
   lastAccepted_ = now;
   JsonDocument doc; doc["success"] = true; doc["command"] = name; doc["queued"] = true;
   sendJson(202, doc);

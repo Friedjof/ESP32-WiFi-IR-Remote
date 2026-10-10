@@ -5,10 +5,25 @@ void OtaManager::begin(const String& password) {
   ArduinoOTA.setHostname(DEVICE_HOSTNAME);
   ArduinoOTA.setMdnsEnabled(false); // NetworkManager owns the mDNS responder.
   ArduinoOTA.setPassword(password.c_str());
-  ArduinoOTA.onStart([]() { Serial.println("OTA update started"); });
-  ArduinoOTA.onEnd([]() { Serial.println("OTA update complete"); });
-  ArduinoOTA.onError([](ota_error_t error) { Serial.printf("OTA error: %u\n", error); });
+  ArduinoOTA.setRebootOnSuccess(false);
+  ArduinoOTA.onStart([this]() {
+    Serial.println("OTA update started");
+    log_.add("ota", "Firmware update started");
+  });
+  ArduinoOTA.onEnd([this]() {
+    Serial.println("OTA update complete");
+    log_.add("ota", "Firmware update complete; restarting");
+    rebootAt_ = millis() + 2000;
+  });
+  ArduinoOTA.onError([this](ota_error_t error) {
+    Serial.printf("OTA error: %u\n", error);
+    log_.add("ota", "Firmware update failed (error %u)", static_cast<unsigned>(error));
+  });
   ArduinoOTA.begin();
+  log_.add("ota", "Password-protected OTA ready on port 3232");
 }
 
-void OtaManager::loop() { ArduinoOTA.handle(); }
+void OtaManager::loop() {
+  ArduinoOTA.handle();
+  if (rebootAt_ && static_cast<int32_t>(millis() - rebootAt_) >= 0) ESP.restart();
+}
